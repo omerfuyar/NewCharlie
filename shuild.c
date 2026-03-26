@@ -13,7 +13,8 @@ int main(int argc, char **argv)
 
     if (argc > 1)
     {
-        SHU_CompilerAddFlags(SHUM_FLAGS_DEBUG SHUM_FLAGS_WARNING_HIGH SHUM_FLAGS_WARNING_ERROR);
+        SHU_CompilerAddFlags(SHUM_FLAGS_WARNING_HIGH);
+        SHU_CompilerAddFlags(SHUM_FLAGS_DEBUG SHUM_FLAGS_WARNING_ERROR " -Wno-missing-declarations");
     }
     else
     {
