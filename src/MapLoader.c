@@ -32,11 +32,6 @@ int LoadMap(const char *file, Map *retMap)
     {
         lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0';
 
-        // if (lineBuffer[0] == '\0')
-        //{
-        //     continue;
-        // }
-
         lineCount++;
 
         if (lineCount > MAP_MAX_HEIGHT)

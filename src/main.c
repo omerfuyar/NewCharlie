@@ -232,6 +232,7 @@ mapChange:
     return 0;
 
 error:
+    SHU_PutString("\nAn error occurred. Press any key to exit.\n");
     SHU_Key();
 
     SHU_Terminate();
