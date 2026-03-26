@@ -12,9 +12,9 @@ int LoadMap(const char *file, Map *retMap)
         return 1;
     }
 
-    char lineBuffer[MAP_MAX_WIDTH + 1] = {0};
+    char lineBuffer[MAP_MAX_WIDTH + 8] = {0};
     char lineCount = 0;
-    if (fgets(lineBuffer, MAP_MAX_WIDTH + 1, mapFile) != NULL)
+    if (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
     {
         if (sscanf(lineBuffer, "%d,%d", &retMap->playerStartX, &retMap->playerStartY) != 2)
         {
@@ -28,12 +28,14 @@ int LoadMap(const char *file, Map *retMap)
         return 1;
     }
 
-    while (fgets(lineBuffer, MAP_MAX_WIDTH + 1, mapFile) != NULL)
+    while (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
     {
-        if (lineBuffer[0] == '\n')
-        {
-            continue;
-        }
+        lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0';
+
+        // if (lineBuffer[0] == '\0')
+        //{
+        //     continue;
+        // }
 
         lineCount++;
 
@@ -43,7 +45,7 @@ int LoadMap(const char *file, Map *retMap)
             goto error;
         }
 
-        size_t lineLength = strlen(lineBuffer) - 1;
+        size_t lineLength = strlen(lineBuffer);
         if (lineLength > MAP_MAX_WIDTH)
         {
             fprintf(stderr, "Error: Line in map file has too many columns.\n");
@@ -51,7 +53,6 @@ int LoadMap(const char *file, Map *retMap)
         }
 
         memcpy(retMap->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
-        // printf("line %d: '%.*s'\n", lineCount, (int)lineLength, retMap->data[lineCount - 1]);
     }
 
     fclose(mapFile);
