@@ -22,6 +22,9 @@ int main(int argc, char **argv)
 
     SHU_ModuleBegin("NewCharlie", NULL);
     SHU_ModuleAddIncludeDirectory("include/");
+    SHU_ModuleAddIncludeDirectory("dependencies/");
     SHU_ModuleAddSourceFile("src/");
     SHU_ModuleCompile(NULL, SHUM_MODULE_EXECUTABLE);
+
+    return 0;
 }
