@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int LoadMap(const char *file, Map retMap, int *playerX, int *playerY)
+int LoadMap(const char *file, Map *retMap)
 {
     FILE *mapFile = fopen(file, "r");
 
@@ -16,7 +16,7 @@ int LoadMap(const char *file, Map retMap, int *playerX, int *playerY)
     char lineCount = 0;
     if (fgets(lineBuffer, MAP_MAX_WIDTH + 1, mapFile) != NULL)
     {
-        if (sscanf(lineBuffer, "%d,%d", playerX, playerY) != 2)
+        if (sscanf(lineBuffer, "%d,%d", &retMap->playerStartX, &retMap->playerStartY) != 2)
         {
             fprintf(stderr, "Error: Failed to parse player position in map file '%s'.\n", file);
             return 1;
@@ -50,8 +50,8 @@ int LoadMap(const char *file, Map retMap, int *playerX, int *playerY)
             goto error;
         }
 
-        memcpy(retMap[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
-        // printf("line %d: '%.*s'\n", lineCount, (int)lineLength, retMap[lineCount - 1]);
+        memcpy(retMap->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
+        // printf("line %d: '%.*s'\n", lineCount, (int)lineLength, retMap->data[lineCount - 1]);
     }
 
     fclose(mapFile);

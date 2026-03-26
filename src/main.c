@@ -65,7 +65,7 @@ void renderBorders(void)
 }
 
 // on new map, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
-void renderMap(const Map map)
+void renderMap(const Map *map, Player *player)
 {
     SHU_SetCursorPosition(1, 1);
 
@@ -75,9 +75,12 @@ void renderMap(const Map map)
 
         for (int x = 0; x < MAP_MAX_WIDTH; x++)
         {
-            SHU_PutCharacter(map[y][x]);
+            SHU_PutCharacter(map->data[y][x]);
         }
     }
+
+    player->x = map->playerStartX;
+    player->y = map->playerStartY;
 }
 
 // on new text, TEXT_FIELD_MAX_WIDTH x MAP_MAX_HEIGHT limit
@@ -94,7 +97,7 @@ void renderTextField(const char *text)
 }
 
 // on new selection, (MAP_MAX_WIDTH + TEXT_FIELD_MAX_WIDTH + 1) x INPUT_FIELD_MAX_HEIGHT limit
-void renderInputField(const char *selection1, const char *selection2, const char *selection3, const char *selection4)
+int renderInputField(const char *selection1, const char *selection2, const char *selection3, const char *selection4)
 {
     if (selection1 != NULL)
     {
@@ -119,18 +122,26 @@ void renderInputField(const char *selection1, const char *selection2, const char
         SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT + 4);
         SHU_PutString("> 4: %.*s", TEXT_FIELD_MAX_WIDTH, selection4);
     }
+
+    // todo get input and return selected option
+    return 0;
 }
 
 // on player move, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
-void renderUpperLayer(const Map map, Player *player, SHUKey key)
+void renderUpperLayer(const Map *map, Player *player, SHUKey key)
 {
-    SHU_SetCursorPosition(player->x + 1, player->y + 1);
-    SHU_PutCharacter(map[player->y][player->x]);
-
     int newX = player->x + (key == SHUKey_ArrowRight) - (key == SHUKey_ArrowLeft);
     int newY = player->y + (key == SHUKey_ArrowDown) - (key == SHUKey_ArrowUp);
 
-    // todo collision and events
+    // todo collisions and events
+
+    if (newX < 0 || newX >= MAP_MAX_WIDTH || newY < 0 || newY >= MAP_MAX_HEIGHT)
+    {
+        return;
+    }
+
+    SHU_SetCursorPosition(player->x + 1, player->y + 1);
+    SHU_PutCharacter(map->data[player->y][player->x]);
 
     player->x = newX;
     player->y = newY;
@@ -171,22 +182,34 @@ int main(const int argc, const char **argv)
     return 1;
     */
 
-    const char *mapFile = "resources/maps/map1";
+    const char *mapFile = "resources/maps/map1.txt";
+    const char *testFile = "resources/maps/test.txt";
 
     Map map1 = {0};
+    Map test = {0};
     Player player = {0};
 
-    if (LoadMap(mapFile, map1, &player.x, &player.y) != 0)
+    if (LoadMap(mapFile, &map1) != 0)
     {
         goto error;
     }
 
+    if (LoadMap(testFile, &test) != 0)
+    {
+        goto error;
+    }
+
+    Map *currentMap = &map1;
+
     renderBorders();
 
-    renderMap(map1);
-    renderUpperLayer(map1, &player, SHUKey_Invalid);
     renderInputField("Go north", "Go south", "Go east", "Go west");
-    renderTextField("You are in a room. There are doors to the north, south, east, and west.");
+    renderTextField("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
+
+mapChange:
+    renderMap(currentMap, &player);
+    renderUpperLayer(currentMap, &player, SHUKey_Invalid);
+
     while (1)
     {
         SHUKey key = SHU_Key();
@@ -196,8 +219,13 @@ int main(const int argc, const char **argv)
             break;
         }
 
-        renderMap(map1);
-        renderUpperLayer(map1, &player, key);
+        if (key == SHUKey_Space)
+        {
+            currentMap = (currentMap == &map1) ? &test : &map1;
+            goto mapChange;
+        }
+
+        renderUpperLayer(currentMap, &player, key);
     }
 
     SHU_Terminate();
