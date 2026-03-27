@@ -1,5 +1,149 @@
 #include "Renderer.h"
+#include <stdio.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <dirent.h>
+#include <sys/stat.h>
+#endif
+
+static int loadMap(const char *file, Map *retMap)
+{
+    FILE *mapFile = fopen(file, "r");
+
+    if (mapFile == 0)
+    {
+        fprintf(stderr, "Error: Failed to load map file '%s'.\n", file);
+        return 1;
+    }
+
+    char lineBuffer[MAP_MAX_WIDTH + 8] = {0};
+    char lineCount = 0;
+
+    if (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
+    {
+        if (sscanf(lineBuffer, "%d,%d", &retMap->playerStartX, &retMap->playerStartY) != 2)
+        {
+            fprintf(stderr, "Error: Failed to parse player position in map file '%s'.\n", file);
+            return 1;
+        }
+    }
+    else
+    {
+        fprintf(stderr, "Error: Failed to read map file '%s'.\n", file);
+        return 1;
+    }
+
+    while (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
+    {
+        lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0';
+
+        lineCount++;
+
+        if (lineCount > MAP_MAX_HEIGHT)
+        {
+            fprintf(stderr, "Error: Map file has too many rows.\n");
+            fclose(mapFile);
+            return 1;
+        }
+
+        size_t lineLength = strlen(lineBuffer);
+        if (lineLength > MAP_MAX_WIDTH)
+        {
+            fprintf(stderr, "Error: Line in map file has too many columns.\n");
+            fclose(mapFile);
+            return 1;
+        }
+
+        memcpy(retMap->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
+    }
+
+    fclose(mapFile);
+    return 0;
+}
+
+int loadMaps(const char *directory, Map *maps, int maxMaps)
+{
+    int loadedMaps = 0;
+
+#if SHUM_HOST_PLATFORM == SHUM_PLATFORM_WINDOWS
+    WIN32_FIND_DATAA ffd = {0};
+    char pattern[STRING_MAX_SIZE] = {0};
+    snprintf(pattern, STRING_MAX_SIZE, "%s\\*.map", directory);
+
+    HANDLE hFind = FindFirstFileA(pattern, &ffd);
+    if (hFind == INVALID_HANDLE_VALUE)
+    {
+        fprintf(stderr, "Error: Failed to open directory '%s' for maps. Put .map files in the directory.\n", directory);
+        return 0;
+    }
+
+    do
+    {
+        if (loadedMaps + 1 > maxMaps)
+        {
+            fprintf(stderr, "Error: Too many .map files in directory '%s'. Maximum given is %d.\n", directory, maxMaps);
+            FindClose(hFind);
+            return 0;
+        }
+
+        snprintf(pattern, STRING_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
+
+        if (loadMap(pattern, &maps[loadedMaps]) != 0)
+        {
+            fprintf(stderr, "Error: Failed to load map file '%s'.\n", pattern);
+            FindClose(hFind);
+            return 0;
+        }
+
+        loadedMaps++;
+    } while (FindNextFileA(hFind, &ffd) != 0);
+
+    FindClose(hFind);
+#else
+    DIR *dir = opendir(directory);
+
+    if (!dir)
+    {
+        fprintf(stderr, "Error: Failed to open directory '%s' for maps. Put .map files in the directory.\n", directory);
+        return 0;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL)
+    {
+        size_t entryLen = strlen(entry->d_name);
+        if (entryLen < 4 || strncmp(entry->d_name + entryLen - 4, ".map", 4) != 0)
+        {
+            continue;
+        }
+
+        if (loadedMaps + 1 > maxMaps)
+        {
+            fprintf(stderr, "Error: Too many .map files in directory '%s'. Maximum given is %d.\n", directory, maxMaps);
+            closedir(dir);
+            return 0;
+        }
+
+        snprintf(pattern, STRING_MAX_SIZE, "%s/%s", directory, entry->d_name);
+
+        if (loadMap(pattern, &maps[loadedMaps]) != 0)
+        {
+            fprintf(stderr, "Error: Failed to load map file '%s'.\n", pattern);
+            closedir(dir);
+            return 0;
+        }
+
+        loadedMaps++;
+    }
+
+    closedir(dir);
+#endif
+
+    return loadedMaps;
+}
 
 // for once in program
 void renderBorders(void)

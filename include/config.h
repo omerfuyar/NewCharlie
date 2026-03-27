@@ -1,8 +1,13 @@
 #pragma once
 
+#define STRING_MAX_SIZE 128
+
 #define MAP_MAX_WIDTH 64
 #define MAP_MAX_HEIGHT 32
 #define MAP_DATA_MAX_SIZE (MAP_MAX_WIDTH * MAP_MAX_HEIGHT)
+
+#define MAP_DOORS_MAX_COUNT 4
+#define MAP_MAX_COUNT 16
 
 #define BORDER_CHAR_HORIZONTAL '-'
 #define BORDER_CHAR_VERTICAL '|'
@@ -19,16 +24,3 @@
 
 #define TEXT_FIELD_MAX_LENGTH (TEXT_FIELD_MAX_WIDTH * (MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT - 1))
 #define INPUT_FIELD_MAX_LENGTH (TEXT_FIELD_MAX_WIDTH * INPUT_FIELD_MAX_HEIGHT)
-
-typedef struct Map
-{
-    int playerStartX;
-    int playerStartY;
-    char data[MAP_MAX_HEIGHT][MAP_MAX_WIDTH];
-} Map;
-
-typedef struct Player
-{
-    int x;
-    int y;
-} Player;

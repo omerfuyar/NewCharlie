@@ -2,6 +2,24 @@
 #include "shucio/shucio.h"
 #include "config.h"
 
+typedef struct Map
+{
+    int index;
+    int playerStartX;
+    int playerStartY;
+    int portals[MAP_DOORS_MAX_COUNT];
+    char data[MAP_MAX_HEIGHT][MAP_MAX_WIDTH];
+} Map;
+
+typedef struct Player
+{
+    int x;
+    int y;
+} Player;
+
+// loads .map files in the given directory, returns the number of maps loaded, or 0 on error
+int loadMaps(const char *directory, Map *maps, int maxMaps);
+
 // for once in program
 void renderBorders(void);
 

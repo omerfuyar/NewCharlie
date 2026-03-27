@@ -1,7 +1,5 @@
-#include "MapLoader.h"
 #include "Renderer.h"
-#include <stdio.h>
-#include <string.h>
+#include "StoryManager.h"
 
 int main(const int argc, const char **argv)
 {
@@ -23,40 +21,23 @@ int main(const int argc, const char **argv)
         goto error;
     }
 
-    /*
-    SHU_PutString("terminal size: %d x %d\n", terminalWidth, terminalHeight);
+    const char *mapsDir = "resources/maps";
 
-    char inputBuffer[256] = {0};
-    SHU_Input(inputBuffer, sizeof(inputBuffer));
-    SHU_PutString("\ninput: '%s'", inputBuffer);
-
-    SHU_Key();
-
-    return 1;
-    */
-
-    const char *mapFile = "resources/maps/map1.txt";
-    const char *testFile = "resources/maps/test.txt";
-
-    Map map1 = {0};
-    Map test = {0};
+    Map maps[MAP_MAX_COUNT] = {0};
     Player player = {0};
 
-    if (LoadMap(mapFile, &map1) != 0)
+    int numMaps = loadMaps(mapsDir, maps, MAP_MAX_COUNT);
+    if (numMaps == 0)
     {
         goto error;
     }
 
-    if (LoadMap(testFile, &test) != 0)
-    {
-        goto error;
-    }
-
-    Map *currentMap = &map1;
+    Map *currentMap = &maps[0];
 
     renderBorders();
 
     renderInputField("Go north", "Go south", "Go east", "Go west");
+    SHU_SetAttributes(SHUAttribute_Bold, SHUAttribute_ColorBGCyan, SHUAttribute_ColorFGGreen);
     renderTextField("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
 
 mapChange:
@@ -74,7 +55,7 @@ mapChange:
 
         if (key == SHUKey_Space)
         {
-            currentMap = (currentMap == &map1) ? &test : &map1;
+            currentMap = (currentMap == &maps[0]) ? &maps[1] : &maps[0];
             goto mapChange;
         }
 
