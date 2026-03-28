@@ -1,0 +1,2 @@
+<(MAP_MAX_COUNT)mapId>[(MAP_PORTALS_MAX_COUNT)(from top to bottom-left to right),portalInex,...]
+<(MAP_MAX_WIDTHxMAP_MAX_HEIGHT)map>

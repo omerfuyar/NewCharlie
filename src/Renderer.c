@@ -9,16 +9,29 @@
 #include <sys/stat.h>
 #endif
 
-static void setAttributesForCharacter(char character)
+static void setAttributesForCharacter(CHAR_ID character)
 {
     switch (character)
     {
 #define CHAR_ENTRY(a, b, ...)           \
-    case b:                             \
+    case CHAR_##a:                      \
         SHU_SetAttributes(__VA_ARGS__); \
         break;
         CHAR_TABLE
 #undef CHAR_ENTRY
+    }
+}
+
+static void setAttributesForLook(LOOK_ID look)
+{
+    switch (look)
+    {
+#define LOOK_ENTRY(a, b, ...)           \
+    case LOOK_##a:                      \
+        SHU_SetAttributes(__VA_ARGS__); \
+        break;
+        LOOK_TABLE
+#undef LOOK_ENTRY
     }
 }
 
@@ -33,25 +46,74 @@ static int loadMap(const char *file, Map *retMap)
     }
 
     char lineBuffer[MAP_MAX_WIDTH + 8] = {0};
-    char lineCount = 0;
+    int lineCount = 0;
+    char playerFound = 0;
 
-    if (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) == NULL)
+    while (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
     {
-        fprintf(stderr, "Error: Failed to read map file '%s'.\n", file);
+        lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0';
+
+        lineCount++;
+
+        if (lineCount > MAP_MAX_HEIGHT)
+        {
+            fprintf(stderr, "Error: Map file '%s' has too many rows.\n", file);
+            fclose(mapFile);
+            return 1;
+        }
+
+        size_t lineLength = strlen(lineBuffer);
+        if (lineLength > MAP_MAX_WIDTH)
+        {
+            fprintf(stderr, "Error: Line in map file '%s' has too many columns.\n", file);
+            fclose(mapFile);
+            return 1;
+        }
+
+        for (size_t i = 0; i < lineLength; i++)
+        {
+            if (lineBuffer[i] == CHAR_PLAYER)
+            {
+                if (playerFound)
+                {
+                    fprintf(stderr, "Error: Multiple player start positions found in map file '%s'.\n", file);
+                    fclose(mapFile);
+                    return 1;
+                }
+
+                retMap->playerStartX = (int)i;
+                retMap->playerStartY = lineCount - 1;
+                playerFound = 1;
+                lineBuffer[i] = ' ';
+            }
+        }
+
+        memcpy(retMap->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
+    }
+
+    fclose(mapFile);
+
+    if (!playerFound)
+    {
+        fprintf(stderr, "Error: No player start position found in map file '%s'.\n", file);
         return 1;
     }
 
-    if (sscanf(lineBuffer, "%d,%d", &retMap->playerStartX, &retMap->playerStartY) != 2)
+    return 0;
+}
+
+static int loadPortrait(const char *file, Portrait *retPortals)
+{
+    FILE *mapFile = fopen(file, "r");
+
+    if (mapFile == 0)
     {
-        fprintf(stderr, "Error: Failed to parse player position in map file '%s'.\n", file);
+        fprintf(stderr, "Error: Failed to load portrait file '%s'.\n", file);
         return 1;
     }
 
-    if (retMap->playerStartX < 0 || retMap->playerStartX >= MAP_MAX_WIDTH || retMap->playerStartY < 0 || retMap->playerStartY >= MAP_MAX_HEIGHT)
-    {
-        fprintf(stderr, "Error: Player position (%d,%d) in map file '%s' is out of bounds. Max dimensions are %dx%d.\n", retMap->playerStartX, retMap->playerStartY, file, MAP_MAX_WIDTH, MAP_MAX_HEIGHT);
-        return 1;
-    }
+    char lineBuffer[MAP_MAX_WIDTH + 8] = {0};
+    int lineCount = 0;
 
     while (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
     {
@@ -61,7 +123,7 @@ static int loadMap(const char *file, Map *retMap)
 
         if (lineCount > MAP_MAX_HEIGHT)
         {
-            fprintf(stderr, "Error: Map file has too many rows.\n");
+            fprintf(stderr, "Error: Portrait file '%s' has too many rows.\n", file);
             fclose(mapFile);
             return 1;
         }
@@ -69,19 +131,20 @@ static int loadMap(const char *file, Map *retMap)
         size_t lineLength = strlen(lineBuffer);
         if (lineLength > MAP_MAX_WIDTH)
         {
-            fprintf(stderr, "Error: Line in map file has too many columns.\n");
+            fprintf(stderr, "Error: Line in portrait file '%s' has too many columns.\n", file);
             fclose(mapFile);
             return 1;
         }
 
-        memcpy(retMap->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
+        memcpy(retPortals->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
     }
 
     fclose(mapFile);
+
     return 0;
 }
 
-int loadMaps(const char *directory, Map *maps, int maxMaps)
+int loadMaps(const char *directory, Map *retMaps, int maxMaps)
 {
     int loadedMaps = 0;
     char pattern[STRING_MAX_SIZE] = {0};
@@ -108,7 +171,7 @@ int loadMaps(const char *directory, Map *maps, int maxMaps)
 
         snprintf(pattern, STRING_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
 
-        if (loadMap(pattern, &maps[loadedMaps]) != 0)
+        if (loadMap(pattern, &retMaps[loadedMaps]) != 0)
         {
             fprintf(stderr, "Error: Failed to load map file '%s'.\n", pattern);
             FindClose(hFind);
@@ -146,7 +209,7 @@ int loadMaps(const char *directory, Map *maps, int maxMaps)
 
         snprintf(pattern, STRING_MAX_SIZE, "%s/%s", directory, entry->d_name);
 
-        if (loadMap(pattern, &maps[loadedMaps]) != 0)
+        if (loadMap(pattern, &retMaps[loadedMaps]) != 0)
         {
             fprintf(stderr, "Error: Failed to load map file '%s'.\n", pattern);
             closedir(dir);
@@ -160,6 +223,87 @@ int loadMaps(const char *directory, Map *maps, int maxMaps)
 #endif
 
     return loadedMaps;
+}
+
+int loadPortraits(const char *directory, Portrait *retPortals, int maxPortraits)
+{
+    int loadedPortraits = 0;
+    char pattern[STRING_MAX_SIZE] = {0};
+
+#ifdef _WIN32
+    WIN32_FIND_DATAA ffd = {0};
+    snprintf(pattern, STRING_MAX_SIZE, "%s\\*.por", directory);
+
+    HANDLE hFind = FindFirstFileA(pattern, &ffd);
+    if (hFind == INVALID_HANDLE_VALUE)
+    {
+        fprintf(stderr, "Error: Failed to open directory '%s' for portraits. Put .por files in the directory.\n", directory);
+        return 0;
+    }
+
+    do
+    {
+        if (loadedPortraits + 1 > maxPortraits)
+        {
+            fprintf(stderr, "Error: Too many .por files in directory '%s'. Maximum given is %d.\n", directory, maxPortraits);
+            FindClose(hFind);
+            return 0;
+        }
+
+        snprintf(pattern, STRING_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
+
+        if (loadPortrait(pattern, &retPortals[loadedPortraits]) != 0)
+        {
+            fprintf(stderr, "Error: Failed to load portrait file '%s'.\n", pattern);
+            FindClose(hFind);
+            return 0;
+        }
+
+        loadedPortraits++;
+    } while (FindNextFileA(hFind, &ffd) != 0);
+
+    FindClose(hFind);
+#else
+    DIR *dir = opendir(directory);
+
+    if (!dir)
+    {
+        fprintf(stderr, "Error: Failed to open directory '%s' for portraits. Put .por files in the directory.\n", directory);
+        return 0;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL)
+    {
+        size_t entryLen = strlen(entry->d_name);
+        if (entryLen < 4 || strncmp(entry->d_name + entryLen - 4, ".por", 4) != 0)
+        {
+            continue;
+        }
+
+        if (loadedPortraits + 1 > maxPortraits)
+        {
+            fprintf(stderr, "Error: Too many .por files in directory '%s'. Maximum given is %d.\n", directory, maxPortraits);
+            closedir(dir);
+            return 0;
+        }
+
+        snprintf(pattern, STRING_MAX_SIZE, "%s/%s", directory, entry->d_name);
+
+        if (loadPortrait(pattern, &retPortals[loadedPortraits]) != 0)
+        {
+            fprintf(stderr, "Error: Failed to load portrait file '%s'.\n", pattern);
+            closedir(dir);
+            return 0;
+        }
+
+        loadedPortraits++;
+    }
+
+    closedir(dir);
+#endif
+
+    return loadedPortraits;
 }
 
 // for once in program
@@ -210,13 +354,35 @@ void renderBorders(void)
 // on new text, TEXT_FIELD_MAX_WIDTH x MAP_MAX_HEIGHT limit
 void renderTextField(const char *text)
 {
-    int textLength = (int)strlen(text) - 1;
-    int lineCount = (textLength + TEXT_FIELD_MAX_WIDTH - 1) / TEXT_FIELD_MAX_WIDTH;
+    int textLength = (int)strlen(text);
+    int cursorIndex = 0;
 
-    for (int i = 0; i < lineCount && i < MAP_MAX_HEIGHT; i++)
+    for (int i = 0; i < textLength; i++)
     {
-        SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, 1 + i);
-        SHU_PutString("%.*s", TEXT_FIELD_MAX_WIDTH, text + i * TEXT_FIELD_MAX_WIDTH);
+        char character = text[i];
+
+        if (character == '\\')
+        {
+            char nextCharacter = (i + 1 < textLength) ? text[i + 1] : LOOK_RESET;
+
+            if (nextCharacter == '\\')
+            {
+                i++;
+                goto putChar;
+            }
+            else
+            {
+                setAttributesForLook(nextCharacter);
+                i++;
+            }
+        }
+        else
+        {
+        putChar:
+            SHU_SetCursorPosition(MAP_MAX_WIDTH + (cursorIndex % TEXT_FIELD_MAX_WIDTH) + 2, (cursorIndex / TEXT_FIELD_MAX_WIDTH) + 1);
+            SHU_PutCharacter(character);
+            cursorIndex++;
+        }
     }
 }
 
@@ -229,30 +395,51 @@ int renderInputField(const char *selection1, const char *selection2, const char 
         SHU_PutString("> 1: %.*s", TEXT_FIELD_MAX_WIDTH, selection1);
     }
 
-    if (selection1 != NULL)
+    if (selection2 != NULL)
     {
         SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT + 2);
         SHU_PutString("> 2: %.*s", TEXT_FIELD_MAX_WIDTH, selection2);
     }
 
-    if (selection1 != NULL)
+    if (selection3 != NULL)
     {
         SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT + 3);
         SHU_PutString("> 3: %.*s", TEXT_FIELD_MAX_WIDTH, selection3);
     }
 
-    if (selection1 != NULL)
+    if (selection4 != NULL)
     {
         SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT + 4);
         SHU_PutString("> 4: %.*s", TEXT_FIELD_MAX_WIDTH, selection4);
     }
 
-    // todo get input and return selected option
+    while (1)
+    {
+        SHUKey key = SHU_Key();
+
+        if (key == SHUKey_1 && selection1 != NULL)
+        {
+            return 1;
+        }
+        else if (key == SHUKey_2 && selection2 != NULL)
+        {
+            return 2;
+        }
+        else if (key == SHUKey_3 && selection3 != NULL)
+        {
+            return 3;
+        }
+        else if (key == SHUKey_4 && selection4 != NULL)
+        {
+            return 4;
+        }
+    }
+
     return 0;
 }
 
 // on new map, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
-void renderBottomLayer(const Map *map, Player *player)
+void renderMap(const Map *map, int *playerX, int *playerY)
 {
     SHU_SetCursorPosition(1, 1);
 
@@ -264,16 +451,33 @@ void renderBottomLayer(const Map *map, Player *player)
         {
             setAttributesForCharacter(map->data[y][x]);
             SHU_PutCharacter(map->data[y][x]);
-            SHU_SetAttributes(0);
+            SHU_SetAttributes(SHUAttribute_Reset);
         }
     }
 
-    player->x = map->playerStartX;
-    player->y = map->playerStartY;
+    *playerX = map->playerStartX;
+    *playerY = map->playerStartY;
+}
+
+void renderPortrait(const Portrait *portrait)
+{
+    SHU_SetCursorPosition(1, 1);
+
+    for (int y = 0; y < MAP_MAX_HEIGHT; y++)
+    {
+        SHU_SetCursorPosition(1, 1 + y);
+
+        for (int x = 0; x < MAP_MAX_WIDTH; x++)
+        {
+            setAttributesForCharacter(portrait->data[y][x]);
+            SHU_PutCharacter(portrait->data[y][x]);
+            SHU_SetAttributes(SHUAttribute_Reset);
+        }
+    }
 }
 
 // on player move, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
-void renderUpperLayer(const Map *map, Player *player, SHUKey key)
+void renderPlayer(const Map *map, Player *player, SHUKey key)
 {
     int newX = player->x + (key == SHUKey_ArrowRight) - (key == SHUKey_ArrowLeft);
     int newY = player->y + (key == SHUKey_ArrowDown) - (key == SHUKey_ArrowUp);

@@ -17,17 +17,23 @@ int main(const int argc, const char **argv)
 
     if (terminalWidth < MIN_TERMINAL_WIDTH || terminalHeight < MIN_TERMINAL_HEIGHT)
     {
-        SHU_PutString("Error: Terminal is too small for current configurations. Minimum size %dx%d. Current size %dx%d.\n", MIN_TERMINAL_WIDTH, MIN_TERMINAL_HEIGHT, terminalWidth, terminalHeight);
+        SHU_PutString("Error: Terminal is too small for current configurations. Minimum size %dx%d. Current size %dx%d.\n",
+                      MIN_TERMINAL_WIDTH, MIN_TERMINAL_HEIGHT, terminalWidth, terminalHeight);
         goto error;
     }
 
-    const char *mapsDir = "resources/maps";
-
     Map maps[MAP_MAX_COUNT] = {0};
+    Portrait portraits[PORTRAIT_MAX_COUNT] = {0};
     Player player = {0};
 
-    int numMaps = loadMaps(mapsDir, maps, MAP_MAX_COUNT);
+    int numMaps = loadMaps("resources/maps", maps, MAP_MAX_COUNT);
     if (numMaps == 0)
+    {
+        goto error;
+    }
+
+    int numPortraits = loadPortraits("resources/portraits", portraits, PORTRAIT_MAX_COUNT);
+    if (numPortraits == 0)
     {
         goto error;
     }
@@ -36,13 +42,11 @@ int main(const int argc, const char **argv)
 
     renderBorders();
 
-    renderInputField("Go north", "Go south", "Go east", "Go west");
-    SHU_SetAttributes(SHUAttribute_Bold, SHUAttribute_ColorBGCyan, SHUAttribute_ColorFGGreen);
-    renderTextField("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
+    // renderInputField("Go north", "Go south", "Go east", "Go west");m
+    renderTextField("Lorem ipsum dolor \"\\\\\" '\\?sit amet\\_', consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
 
-mapChange:
-    renderBottomLayer(currentMap, &player);
-    renderUpperLayer(currentMap, &player, SHUKey_Invalid);
+    renderMap(currentMap, &player.x, &player.y);
+    renderPlayer(currentMap, &player, SHUKey_Invalid);
 
     while (1)
     {
@@ -53,13 +57,7 @@ mapChange:
             break;
         }
 
-        if (key == SHUKey_Space)
-        {
-            currentMap = (currentMap == &maps[0]) ? &maps[1] : &maps[0];
-            goto mapChange;
-        }
-
-        renderUpperLayer(currentMap, &player, key);
+        renderPlayer(currentMap, &player, key);
     }
 
     SHU_Terminate();
