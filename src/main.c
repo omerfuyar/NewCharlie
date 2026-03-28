@@ -17,7 +17,7 @@ int main(const int argc, const char **argv)
 
     if (terminalWidth < MIN_TERMINAL_WIDTH || terminalHeight < MIN_TERMINAL_HEIGHT)
     {
-        SHU_PutString("Error: Terminal is too small for current configurations. Minimum size is %dx%d.\n", MIN_TERMINAL_WIDTH, MIN_TERMINAL_HEIGHT);
+        SHU_PutString("Error: Terminal is too small for current configurations. Minimum size %dx%d. Current size %dx%d.\n", MIN_TERMINAL_WIDTH, MIN_TERMINAL_HEIGHT, terminalWidth, terminalHeight);
         goto error;
     }
 
@@ -41,7 +41,7 @@ int main(const int argc, const char **argv)
     renderTextField("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
 
 mapChange:
-    renderMap(currentMap, &player);
+    renderBottomLayer(currentMap, &player);
     renderUpperLayer(currentMap, &player, SHUKey_Invalid);
 
     while (1)

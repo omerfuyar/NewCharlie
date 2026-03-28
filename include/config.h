@@ -9,9 +9,18 @@
 #define MAP_DOORS_MAX_COUNT 4
 #define MAP_MAX_COUNT 16
 
-#define BORDER_CHAR_HORIZONTAL '-'
-#define BORDER_CHAR_VERTICAL '|'
-#define PLAYER_CHAR '@'
+#define CHAR_TABLE                                                         \
+    CHAR_ENTRY(BORDER_HORIZONTAL, '-', SHUAttribute_ColorFGBlue)           \
+    CHAR_ENTRY(BORDER_VERTICAL, '|', SHUAttribute_ColorFGBlue)             \
+    CHAR_ENTRY(PLAYER, '@', SHUAttribute_Bold, SHUAttribute_ColorFGYellow) \
+    CHAR_ENTRY(WALL, '#', SHUAttribute_Bold, SHUAttribute_ColorFGGreen)
+
+#define CHAR_ENTRY(a, b, ...) CHAR_##a = b,
+typedef enum CHAR_ID
+{
+    CHAR_TABLE
+} CHAR_ID;
+#undef CHAR_ENTRY
 
 #define INPUT_FIELD_SELECTION_COUNT 4
 #define INPUT_FIELD_SELECTION_HEIGHT 1

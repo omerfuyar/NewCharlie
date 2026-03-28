@@ -24,7 +24,7 @@ int loadMaps(const char *directory, Map *maps, int maxMaps);
 void renderBorders(void);
 
 // on new map, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
-void renderMap(const Map *map, Player *player);
+void renderBottomLayer(const Map *map, Player *player);
 
 // on new text, TEXT_FIELD_MAX_WIDTH x MAP_MAX_HEIGHT limit
 void renderTextField(const char *text);

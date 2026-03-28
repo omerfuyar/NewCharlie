@@ -1,0 +1,2 @@
+<playerStartX,playerStartY>
+<MAP_MAX_WIDTHxMAP_MAX_HEIGHT map>

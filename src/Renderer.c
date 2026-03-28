@@ -9,6 +9,19 @@
 #include <sys/stat.h>
 #endif
 
+static void setAttributesForCharacter(char character)
+{
+    switch (character)
+    {
+#define CHAR_ENTRY(a, b, ...)           \
+    case b:                             \
+        SHU_SetAttributes(__VA_ARGS__); \
+        break;
+        CHAR_TABLE
+#undef CHAR_ENTRY
+    }
+}
+
 static int loadMap(const char *file, Map *retMap)
 {
     FILE *mapFile = fopen(file, "r");
@@ -22,23 +35,27 @@ static int loadMap(const char *file, Map *retMap)
     char lineBuffer[MAP_MAX_WIDTH + 8] = {0};
     char lineCount = 0;
 
-    if (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
-    {
-        if (sscanf(lineBuffer, "%d,%d", &retMap->playerStartX, &retMap->playerStartY) != 2)
-        {
-            fprintf(stderr, "Error: Failed to parse player position in map file '%s'.\n", file);
-            return 1;
-        }
-    }
-    else
+    if (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) == NULL)
     {
         fprintf(stderr, "Error: Failed to read map file '%s'.\n", file);
         return 1;
     }
 
+    if (sscanf(lineBuffer, "%d,%d", &retMap->playerStartX, &retMap->playerStartY) != 2)
+    {
+        fprintf(stderr, "Error: Failed to parse player position in map file '%s'.\n", file);
+        return 1;
+    }
+
+    if (retMap->playerStartX < 0 || retMap->playerStartX >= MAP_MAX_WIDTH || retMap->playerStartY < 0 || retMap->playerStartY >= MAP_MAX_HEIGHT)
+    {
+        fprintf(stderr, "Error: Player position (%d,%d) in map file '%s' is out of bounds. Max dimensions are %dx%d.\n", retMap->playerStartX, retMap->playerStartY, file, MAP_MAX_WIDTH, MAP_MAX_HEIGHT);
+        return 1;
+    }
+
     while (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
     {
-        lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0';
+        lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0'; // todo maybe different for linux
 
         lineCount++;
 
@@ -67,10 +84,10 @@ static int loadMap(const char *file, Map *retMap)
 int loadMaps(const char *directory, Map *maps, int maxMaps)
 {
     int loadedMaps = 0;
-
-#if SHUM_HOST_PLATFORM == SHUM_PLATFORM_WINDOWS
-    WIN32_FIND_DATAA ffd = {0};
     char pattern[STRING_MAX_SIZE] = {0};
+
+#ifdef _WIN32
+    WIN32_FIND_DATAA ffd = {0};
     snprintf(pattern, STRING_MAX_SIZE, "%s\\*.map", directory);
 
     HANDLE hFind = FindFirstFileA(pattern, &ffd);
@@ -148,60 +165,46 @@ int loadMaps(const char *directory, Map *maps, int maxMaps)
 // for once in program
 void renderBorders(void)
 {
-    // horizontals
+    setAttributesForCharacter(CHAR_BORDER_HORIZONTAL);
 
+    // horizontals
     SHU_SetCursorPosition(0, 0);
     for (int x = 0; x < MIN_TERMINAL_WIDTH; x++)
     {
-        SHU_PutCharacter(BORDER_CHAR_HORIZONTAL);
+        SHU_PutCharacter(CHAR_BORDER_HORIZONTAL);
     }
 
     SHU_SetCursorPosition(0, MIN_TERMINAL_HEIGHT - 1);
     for (int x = 0; x < MIN_TERMINAL_WIDTH; x++)
     {
-        SHU_PutCharacter(BORDER_CHAR_HORIZONTAL);
+        SHU_PutCharacter(CHAR_BORDER_HORIZONTAL);
     }
 
     SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT);
     for (int x = 0; x < TEXT_FIELD_MAX_WIDTH; x++)
     {
-        SHU_PutCharacter(BORDER_CHAR_HORIZONTAL);
+        SHU_PutCharacter(CHAR_BORDER_HORIZONTAL);
     }
 
-    // verticals
+    SHU_SetAttributes(SHUAttribute_Reset);
+    setAttributesForCharacter(CHAR_BORDER_VERTICAL);
 
+    // verticals
     for (int y = 1; y < MIN_TERMINAL_HEIGHT - 1; y++)
     {
         SHU_SetCursorPosition(0, y);
-        SHU_PutCharacter(BORDER_CHAR_VERTICAL);
+        SHU_PutCharacter(CHAR_BORDER_VERTICAL);
         SHU_SetCursorPosition(MIN_TERMINAL_WIDTH - 1, y);
-        SHU_PutCharacter(BORDER_CHAR_VERTICAL);
+        SHU_PutCharacter(CHAR_BORDER_VERTICAL);
     }
 
     for (int y = 1; y < MAP_MAX_HEIGHT + 1; y++)
     {
         SHU_SetCursorPosition(MAP_MAX_WIDTH + 1, y);
-        SHU_PutCharacter(BORDER_CHAR_VERTICAL);
-    }
-}
-
-// on new map, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
-void renderMap(const Map *map, Player *player)
-{
-    SHU_SetCursorPosition(1, 1);
-
-    for (int y = 0; y < MAP_MAX_HEIGHT; y++)
-    {
-        SHU_SetCursorPosition(1, 1 + y);
-
-        for (int x = 0; x < MAP_MAX_WIDTH; x++)
-        {
-            SHU_PutCharacter(map->data[y][x]);
-        }
+        SHU_PutCharacter(CHAR_BORDER_VERTICAL);
     }
 
-    player->x = map->playerStartX;
-    player->y = map->playerStartY;
+    SHU_SetAttributes(SHUAttribute_Reset);
 }
 
 // on new text, TEXT_FIELD_MAX_WIDTH x MAP_MAX_HEIGHT limit
@@ -248,25 +251,52 @@ int renderInputField(const char *selection1, const char *selection2, const char 
     return 0;
 }
 
+// on new map, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
+void renderBottomLayer(const Map *map, Player *player)
+{
+    SHU_SetCursorPosition(1, 1);
+
+    for (int y = 0; y < MAP_MAX_HEIGHT; y++)
+    {
+        SHU_SetCursorPosition(1, 1 + y);
+
+        for (int x = 0; x < MAP_MAX_WIDTH; x++)
+        {
+            setAttributesForCharacter(map->data[y][x]);
+            SHU_PutCharacter(map->data[y][x]);
+            SHU_SetAttributes(0);
+        }
+    }
+
+    player->x = map->playerStartX;
+    player->y = map->playerStartY;
+}
+
 // on player move, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
 void renderUpperLayer(const Map *map, Player *player, SHUKey key)
 {
     int newX = player->x + (key == SHUKey_ArrowRight) - (key == SHUKey_ArrowLeft);
     int newY = player->y + (key == SHUKey_ArrowDown) - (key == SHUKey_ArrowUp);
 
-    // todo collisions and events
-
     if (newX < 0 || newX >= MAP_MAX_WIDTH || newY < 0 || newY >= MAP_MAX_HEIGHT)
     {
         return;
     }
 
+    // todo collisions and events
+
     SHU_SetCursorPosition(player->x + 1, player->y + 1);
+
+    setAttributesForCharacter(map->data[player->y][player->x]);
     SHU_PutCharacter(map->data[player->y][player->x]);
 
     player->x = newX;
     player->y = newY;
 
     SHU_SetCursorPosition(player->x + 1, player->y + 1);
-    SHU_PutCharacter(PLAYER_CHAR);
+    SHU_SetAttributes(SHUAttribute_Reset);
+
+    setAttributesForCharacter(CHAR_PLAYER);
+    SHU_PutCharacter(CHAR_PLAYER);
+    SHU_SetAttributes(SHUAttribute_Reset);
 }
