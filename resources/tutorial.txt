@@ -1,2 +1,3 @@
-<(MAP_MAX_COUNT)mapId>[(MAP_PORTALS_MAX_COUNT)(from top to bottom-left to right),portalInex,...]
-<(MAP_MAX_WIDTHxMAP_MAX_HEIGHT)map>
+mapID - The unique identifier for the map. Max value is MAP_MAX_COUNT - 1.
+portalTargetMapID,... - The IDs of the maps that the portals lead to, from top to bottom, left to right. Max of MAP_PORTALS_MAX_COUNT. Leave empty if there are no portals.
+mapData - The data for the map, which includes the layout, interactive elements. Size must be MAP_MAX_WIDTH x MAP_MAX_HEIGHT.

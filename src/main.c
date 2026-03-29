@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "ResourceLoader.h"
 #include "StoryManager.h"
 
 int main(const int argc, const char **argv)
@@ -57,7 +58,10 @@ int main(const int argc, const char **argv)
             break;
         }
 
-        renderPlayer(currentMap, &player, key);
+        if (renderPlayer(currentMap, &player, key) != 0)
+        {
+            goto error;
+        }
     }
 
     SHU_Terminate();

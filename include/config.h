@@ -11,20 +11,6 @@
 
 #define PORTRAIT_MAX_COUNT 8
 
-// define how characters will look in the terminal
-#define CHAR_TABLE                                                         \
-    CHAR_ENTRY(BORDER_HORIZONTAL, '-', SHUAttribute_ColorFGBlue)           \
-    CHAR_ENTRY(BORDER_VERTICAL, '|', SHUAttribute_ColorFGBlue)             \
-    CHAR_ENTRY(PLAYER, '@', SHUAttribute_Bold, SHUAttribute_ColorFGYellow) \
-    CHAR_ENTRY(WALL, '#', SHUAttribute_Bold, SHUAttribute_ColorFGGreen)
-
-#define CHAR_ENTRY(a, b, ...) CHAR_##a = b,
-typedef enum CHAR_ID
-{
-    CHAR_TABLE
-} CHAR_ID;
-#undef CHAR_ENTRY
-
 #define INPUT_FIELD_SELECTION_COUNT 4
 #define INPUT_FIELD_SELECTION_HEIGHT 1
 
@@ -48,3 +34,29 @@ typedef enum LOOK_ID
     LOOK_TABLE
 } LOOK_ID;
 #undef LOOK_ENTRY
+
+typedef struct Interactable
+{
+    int foo;
+} Interactable;
+
+typedef struct Map
+{
+    int index;
+    int playerStartX;
+    int playerStartY;
+    int portals[MAP_PORTALS_MAX_COUNT];
+    int interactables[MAP_PORTALS_MAX_COUNT];
+    char data[MAP_MAX_HEIGHT][MAP_MAX_WIDTH];
+} Map;
+
+typedef struct Portrait
+{
+    char data[MAP_MAX_HEIGHT][MAP_MAX_WIDTH];
+} Portrait;
+
+typedef struct Player
+{
+    int x;
+    int y;
+} Player;
