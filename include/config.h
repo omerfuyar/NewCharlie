@@ -11,6 +11,8 @@
 
 #define PORTRAIT_MAX_COUNT 8
 
+#define NPC_MAX_COUNT 16
+
 #define INPUT_FIELD_SELECTION_COUNT 4
 #define INPUT_FIELD_SELECTION_HEIGHT 1
 
@@ -35,18 +37,13 @@ typedef enum LOOK_ID
 } LOOK_ID;
 #undef LOOK_ENTRY
 
-typedef struct Interactable
-{
-    int foo;
-} Interactable;
-
 typedef struct Map
 {
     int index;
     int playerStartX;
     int playerStartY;
-    int portals[MAP_PORTALS_MAX_COUNT];
-    int interactables[MAP_PORTALS_MAX_COUNT];
+    int portalIndices[MAP_PORTALS_MAX_COUNT];
+    int interactableIndices[MAP_PORTALS_MAX_COUNT];
     char data[MAP_MAX_HEIGHT][MAP_MAX_WIDTH];
 } Map;
 
@@ -60,3 +57,8 @@ typedef struct Player
     int x;
     int y;
 } Player;
+
+typedef struct NPC
+{
+    int foo;
+} NPC;

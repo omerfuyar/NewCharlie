@@ -44,7 +44,7 @@ static int parseMapHeader(FILE *mapFile, char *lineBuffer, int lineBufferSize, M
         return 1;
     }
 
-    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->portals[0], &retMap->portals[1], &retMap->portals[2], &retMap->portals[3]) != 4)
+    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->portalIndices[0], &retMap->portalIndices[1], &retMap->portalIndices[2], &retMap->portalIndices[3]) != 4)
     {
         fprintf(stderr, "Error: Map file has invalid format. Failed to read portal index from second line.\n");
         return 1;
@@ -59,11 +59,11 @@ static int parseMapHeader(FILE *mapFile, char *lineBuffer, int lineBufferSize, M
 
     if (lineBuffer[0] != 'i')
     {
-        fprintf(stderr, "Error: Map file has invalid format. Third (Interactable) line must start with 'i'.\n");
+        fprintf(stderr, "Error: Map file has invalid format. Third (NPC) line must start with 'i'.\n");
         return 1;
     }
 
-    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->interactables[0], &retMap->interactables[1], &retMap->interactables[2], &retMap->interactables[3]) != 4)
+    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->interactableIndices[0], &retMap->interactableIndices[1], &retMap->interactableIndices[2], &retMap->interactableIndices[3]) != 4)
     {
         fprintf(stderr, "Error: Map file has invalid format. Failed to read interactable index from third line.\n");
         return 1;
@@ -189,11 +189,11 @@ static int loadPortrait(const char *file, Portrait *retPortals)
     return 0;
 }
 
-static int loadInteractable(const char *file, Interactable *retInteractable)
+static int loadNPC(const char *file, NPC *retNPC)
 {
     // todo
     (void)file;
-    (void)retInteractable;
+    (void)retNPC;
     return 0;
 }
 
@@ -359,11 +359,11 @@ int loadPortraits(const char *directory, Portrait *retPortals, int maxPortraits)
     return loadedPortraits;
 }
 
-int loadInteractables(const char *file, Interactable *retInteractables, int maxInteractables)
+int loadNPCs(const char *file, NPC *retNPCs, int maxNPCs)
 {
     // todo
     (void)file;
-    (void)retInteractables;
-    (void)maxInteractables;
+    (void)retNPCs;
+    (void)maxNPCs;
     return 0;
 }

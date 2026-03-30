@@ -25,6 +25,7 @@ int main(const int argc, const char **argv)
 
     Map maps[MAP_MAX_COUNT] = {0};
     Portrait portraits[PORTRAIT_MAX_COUNT] = {0};
+    NPC npcs[NPC_MAX_COUNT] = {0};
     Player player = {0};
 
     int numMaps = loadMaps("resources/maps", maps, MAP_MAX_COUNT);
@@ -35,6 +36,12 @@ int main(const int argc, const char **argv)
 
     int numPortraits = loadPortraits("resources/portraits", portraits, PORTRAIT_MAX_COUNT);
     if (numPortraits == 0)
+    {
+        goto error;
+    }
+
+    int numNPCs = loadNPCs("resources/npcs", npcs, NPC_MAX_COUNT);
+    if (numNPCs == 0)
     {
         goto error;
     }
