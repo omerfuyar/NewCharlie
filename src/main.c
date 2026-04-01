@@ -39,14 +39,16 @@ int main(const int argc, const char **argv)
     Portrait portraits[PORTRAIT_MAX_COUNT] = {0};
     Player player = {0};
 
-    int numMaps = loadMaps("resources/maps", maps, MAP_MAX_COUNT);
-    if (numMaps == 0)
+    int numPortraits = loadPortraits("resources/portraits", portraits, PORTRAIT_MAX_COUNT);
+    if (numPortraits == 0)
     {
         goto error;
     }
 
-    int numPortraits = loadPortraits("resources/portraits", portraits, PORTRAIT_MAX_COUNT);
-    if (numPortraits == 0)
+    int numMaps = loadMaps("resources/maps",
+                           portraits, PORTRAIT_MAX_COUNT,
+                           maps, MAP_MAX_COUNT);
+    if (numMaps == 0)
     {
         goto error;
     }

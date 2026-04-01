@@ -61,8 +61,7 @@ typedef struct NPCNode
 
 typedef struct Portrait
 {
-    int mapIndex;
-    int npcIndex;
+    int index;
     char data[MAP_MAX_HEIGHT][MAP_MAX_WIDTH];
 } Portrait;
 
@@ -72,7 +71,7 @@ typedef struct NPC
     int x;
     int y;
     int nodesCount;
-    Portrait *portrait;
+    const Portrait *portrait;
     NPCNode nodes[NPC_NODE_MAX_COUNT];
 } NPC;
 

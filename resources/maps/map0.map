@@ -1,12 +1,14 @@
 i 0
 p 0,-1,-1,-1
 n 0,-1,-1,-1
-N 0
+
+N 0,0
 v -1 Hello there adventurer! Have you found my hammer?
 c -1,-1,-1 Not yet.
 c 5,6,1 Yes, here it is!
 v 6 Thank you for finding my hammer!
 c -1,-1,-1 You're welcome.
+
 d
 ################################################################
 #@                                                             #

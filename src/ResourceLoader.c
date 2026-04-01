@@ -41,7 +41,7 @@ int loglog(const char *format, ...)
 }
 #endif
 
-static int loadMap(const char *file, Map *retBufStart, int maxMaps)
+static int loadMap(const char *file, const Portrait *portraits, int maxPortraits, Map *retBufStart, int maxMaps)
 {
     FILE *mapFile = fopen(file, "r");
 
@@ -63,7 +63,7 @@ static int loadMap(const char *file, Map *retBufStart, int maxMaps)
 
     while (fgets(lineBuffer, sizeof(lineBuffer), mapFile))
     {
-        lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0'; // strip trailing newline characters
+        lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0';
 
         if (lineBuffer[0] == '\0')
         {
@@ -102,7 +102,24 @@ static int loadMap(const char *file, Map *retBufStart, int maxMaps)
         else if (prefix == 'N')
         {
             int npcId = -1;
-            scanCheck(lineBuffer + 2, 1, "%d", &npcId);
+            int portraitIndex = -1;
+            scanCheck(lineBuffer + 2, 2, "%d,%d", &npcId, &portraitIndex);
+
+            if (portraitIndex > -1)
+            {
+                if (portraitIndex >= maxPortraits)
+                {
+                    fprintf(stderr, "Error: Portrait index %d for NPC %d in map file '%s' is out of bounds. Max index is %d.\n", portraitIndex, npcId, file, maxPortraits - 1);
+                    fclose(mapFile);
+                    return 1;
+                }
+
+                map->npcs[npcId].portrait = portraits + portraitIndex;
+            }
+            else
+            {
+                map->npcs[npcId].portrait = NULL;
+            }
 
             for (int i = 0; i < MAP_INTERACTABLE_MAX_COUNT; i++)
             {
@@ -290,41 +307,25 @@ static int loadPortrait(const char *file, Portrait *retBufStart, int maxPortrait
         return 1;
     }
 
-    if (lineBuffer[0] != 'i')
+    int bufPortraitIndex = -1;
+
+    if (sscanf(lineBuffer, "%d", &bufPortraitIndex) != 1)
     {
-        fprintf(stderr, "Error: First line of portrait file '%s' must start with 'i' followed by map index and NPC index.\n", file);
+        fprintf(stderr, "Error: Failed to parse portrait index in portrait file '%s'. Put the portrait index on the first line.\n", file);
         fclose(mapFile);
         return 1;
     }
 
-    int bufMapIndex = -1;
-    int bufNpcIndex = -1;
-
-    if (sscanf(lineBuffer + 2, "%d,%d", &bufMapIndex, &bufNpcIndex) != 2)
+    if (bufPortraitIndex < 0 || bufPortraitIndex >= maxPortraits)
     {
-        fprintf(stderr, "Error: Failed to parse first line of portrait file '%s'. Expected format: i mapIndex,npcIndex\n", file);
+        fprintf(stderr, "Error: Portrait index in portrait file '%s' is out of bounds. Must be between 0 and %d.\n", file, maxPortraits - 1);
         fclose(mapFile);
         return 1;
     }
 
-    if (bufMapIndex < 0 || bufMapIndex >= MAP_MAX_COUNT)
-    {
-        fprintf(stderr, "Error: Map index in portrait file '%s' is out of bounds. Must be between 0 and %d.\n", file, (maxPortraits / MAP_INTERACTABLE_MAX_COUNT) - 1);
-        fclose(mapFile);
-        return 1;
-    }
+    Portrait *portrait = retBufStart + bufPortraitIndex;
 
-    if (bufNpcIndex < 0 || bufNpcIndex >= MAP_INTERACTABLE_MAX_COUNT)
-    {
-        fprintf(stderr, "Error: NPC index in portrait file '%s' is out of bounds. Must be between 0 and %d.\n", file, MAP_INTERACTABLE_MAX_COUNT - 1);
-        fclose(mapFile);
-        return 1;
-    }
-
-    Portrait *portrait = retBufStart + (bufMapIndex * MAP_INTERACTABLE_MAX_COUNT + bufNpcIndex);
-
-    portrait->mapIndex = bufMapIndex;
-    portrait->npcIndex = bufNpcIndex;
+    portrait->index = bufPortraitIndex;
 
     while (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
     {
@@ -360,7 +361,7 @@ static int loadPortrait(const char *file, Portrait *retBufStart, int maxPortrait
     return 0;
 }
 
-int loadMaps(const char *directory, Map *retBufStart, int maxMaps)
+int loadMaps(const char *directory, const Portrait *portraits, int maxPortraits, Map *retBufStart, int maxMaps)
 {
     char pattern[STRING_MAX_SIZE] = {0};
     int loadedMaps = 0;
@@ -387,7 +388,7 @@ int loadMaps(const char *directory, Map *retBufStart, int maxMaps)
 
         snprintf(pattern, STRING_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
 
-        if (loadMap(pattern, retBufStart, maxMaps) != 0)
+        if (loadMap(pattern, portraits, maxPortraits, retBufStart, maxMaps) != 0)
         {
             fprintf(stderr, "Error: Failed to load map file '%s' from folder '%s'.\n", ffd.cFileName, directory);
             FindClose(hFind);
@@ -425,7 +426,7 @@ int loadMaps(const char *directory, Map *retBufStart, int maxMaps)
 
         snprintf(pattern, STRING_MAX_SIZE, "%s/%s", directory, entry->d_name);
 
-        if (loadMap(pattern, retBufStart, maxMaps) != 0)
+        if (loadMap(pattern, portraits, maxPortraits, retBufStart, maxMaps) != 0)
         {
             fprintf(stderr, "Error: Failed to load map file '%s' from folder '%s'.\n", entry->d_name, directory);
             closedir(dir);

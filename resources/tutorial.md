@@ -24,8 +24,8 @@ Place NPCs on the map using the `I` character. The character can be changed from
 ## NPC Nodes
 Define the dialogue trees for the NPCs mapped in the `n` line. Place these before the `d` line.
 
-### `N npcID`
-Starts the definition of an NPC. The `npcID` must match one of the IDs provided in the `n` line.
+### `N npcID,npcPortraitIndex`
+Starts the definition of an NPC. The `npcID` must match one of the IDs provided in the `n` line. The `npcPortraitIndex` is the index of the portrait to display when talking to this NPC. Put -1 for no portrait.
 
 ### `v reqFlag "dialogueText"`
 Defines a dialogue node for the current `N`.
@@ -41,8 +41,8 @@ Defines a choice option for the most recently defined `v` node. Must be max INPU
 
 # FOR PORTRAITS
 
-## `i mapID,NPCIndex`
-The map and NPC index that this portrait corresponds to. The map index must match one of the `i` lines in the map files, and the NPC index must be between 0 and MAP_NPCS_MAX_COUNT - 1.
+## `portraitIndex`
+The unique identifier for the portrait. Max value is PORTRAIT_MAX_COUNT - 1.
 
 ## `portraitData` 
 The data for the portrait, basically pixels for the image. Size must be MAP_MAX_WIDTH x MAP_MAX_HEIGHT.

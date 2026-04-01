@@ -88,5 +88,5 @@ static int npcBehaviour(const Map *map, Player *player, MapCharacterData data)
 
     startDialogue(npc, player);
 
-    return 0; // todo
+    return 0;
 }
