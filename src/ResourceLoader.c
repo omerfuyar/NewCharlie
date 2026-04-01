@@ -19,9 +19,9 @@ static int parseMapHeader(FILE *mapFile, char *lineBuffer, int lineBufferSize, M
         return 1;
     }
 
-    if (lineBuffer[0] != 'u')
+    if (lineBuffer[0] != 'i')
     {
-        fprintf(stderr, "Error: Map file has invalid format. First (ID) line must start with 'u'.\n");
+        fprintf(stderr, "Error: Map file has invalid format. First (ID) line must start with 'i'.\n");
         return 1;
     }
 
@@ -44,7 +44,7 @@ static int parseMapHeader(FILE *mapFile, char *lineBuffer, int lineBufferSize, M
         return 1;
     }
 
-    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->portalIndices[0], &retMap->portalIndices[1], &retMap->portalIndices[2], &retMap->portalIndices[3]) != 4)
+    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->portals[0].targetMapIndex, &retMap->portals[1].targetMapIndex, &retMap->portals[2].targetMapIndex, &retMap->portals[3].targetMapIndex) != 4)
     {
         fprintf(stderr, "Error: Map file has invalid format. Failed to read portal index from second line.\n");
         return 1;
@@ -57,13 +57,13 @@ static int parseMapHeader(FILE *mapFile, char *lineBuffer, int lineBufferSize, M
         return 1;
     }
 
-    if (lineBuffer[0] != 'i')
+    if (lineBuffer[0] != 'n')
     {
-        fprintf(stderr, "Error: Map file has invalid format. Third (NPC) line must start with 'i'.\n");
+        fprintf(stderr, "Error: Map file has invalid format. Third (NPC) line must start with 'n'.\n");
         return 1;
     }
 
-    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->interactableIndices[0], &retMap->interactableIndices[1], &retMap->interactableIndices[2], &retMap->interactableIndices[3]) != 4)
+    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->npcs[0].index, &retMap->npcs[1].index, &retMap->npcs[2].index, &retMap->npcs[3].index) != 4)
     {
         fprintf(stderr, "Error: Map file has invalid format. Failed to read interactable index from third line.\n");
         return 1;
@@ -85,6 +85,7 @@ static int loadMap(const char *file, Map *retMap)
     char lineBuffer[MAP_MAX_WIDTH + 8] = {0};
     int lineCount = 0;
     char playerFound = 0;
+    char portalsFound = 0;
 
     lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0'; // id line
     if (parseMapHeader(mapFile, lineBuffer, MAP_MAX_WIDTH + 8, retMap) != 0)
@@ -117,8 +118,12 @@ static int loadMap(const char *file, Map *retMap)
 
         for (size_t i = 0; i < lineLength; i++)
         {
-            if (lineBuffer[i] == CHAR_PLAYER)
+            int posX = (int)i;
+            int posY = lineCount - 1;
+
+            switch (lineBuffer[i])
             {
+            case CHAR_PLAYER:
                 if (playerFound)
                 {
                     fprintf(stderr, "Error: Multiple player start positions found in map file '%s'.\n", file);
@@ -126,10 +131,23 @@ static int loadMap(const char *file, Map *retMap)
                     return 1;
                 }
 
-                retMap->playerStartX = (int)i;
-                retMap->playerStartY = lineCount - 1;
+                retMap->playerStartX = posX;
+                retMap->playerStartY = posY;
                 playerFound = 1;
                 lineBuffer[i] = ' ';
+                break;
+            case CHAR_PORTAL:
+                if (portalsFound >= MAP_INTERACTABLE_MAX_COUNT)
+                {
+                    fprintf(stderr, "Error: Too many portals found in map file '%s'. Maximum is %d.\n", file, MAP_INTERACTABLE_MAX_COUNT);
+                    fclose(mapFile);
+                    return 1;
+                }
+
+                retMap->portals[(int)portalsFound].x = posX;
+                retMap->portals[(int)portalsFound].y = posY;
+                portalsFound++;
+                break;
             }
         }
 
@@ -189,14 +207,6 @@ static int loadPortrait(const char *file, Portrait *retPortals)
     return 0;
 }
 
-static int loadNPC(const char *file, NPC *retNPC)
-{
-    // todo
-    (void)file;
-    (void)retNPC;
-    return 0;
-}
-
 int loadMaps(const char *directory, Map *retMaps, int maxMaps)
 {
     int loadedMaps = 0;
@@ -226,7 +236,7 @@ int loadMaps(const char *directory, Map *retMaps, int maxMaps)
 
         if (loadMap(pattern, &retMaps[loadedMaps]) != 0)
         {
-            fprintf(stderr, "Error: Failed to load map file '%s'.\n", pattern);
+            fprintf(stderr, "Error: Failed to load map file '%s' from folder '%s'.\n", ffd.cFileName, directory);
             FindClose(hFind);
             return 0;
         }
@@ -264,7 +274,7 @@ int loadMaps(const char *directory, Map *retMaps, int maxMaps)
 
         if (loadMap(pattern, &retMaps[loadedMaps]) != 0)
         {
-            fprintf(stderr, "Error: Failed to load map file '%s'.\n", pattern);
+            fprintf(stderr, "Error: Failed to load map file '%s' from folder '%s'.\n", entry->d_name, directory);
             closedir(dir);
             return 0;
         }
@@ -307,7 +317,7 @@ int loadPortraits(const char *directory, Portrait *retPortals, int maxPortraits)
 
         if (loadPortrait(pattern, &retPortals[loadedPortraits]) != 0)
         {
-            fprintf(stderr, "Error: Failed to load portrait file '%s'.\n", pattern);
+            fprintf(stderr, "Error: Failed to load portrait file '%s' from folder '%s'.\n", ffd.cFileName, directory);
             FindClose(hFind);
             return 0;
         }
@@ -345,7 +355,7 @@ int loadPortraits(const char *directory, Portrait *retPortals, int maxPortraits)
 
         if (loadPortrait(pattern, &retPortals[loadedPortraits]) != 0)
         {
-            fprintf(stderr, "Error: Failed to load portrait file '%s'.\n", pattern);
+            fprintf(stderr, "Error: Failed to load portrait file '%s' from folder '%s'.\n", entry->d_name, directory);
             closedir(dir);
             return 0;
         }
@@ -357,13 +367,4 @@ int loadPortraits(const char *directory, Portrait *retPortals, int maxPortraits)
 #endif
 
     return loadedPortraits;
-}
-
-int loadNPCs(const char *file, NPC *retNPCs, int maxNPCs)
-{
-    // todo
-    (void)file;
-    (void)retNPCs;
-    (void)maxNPCs;
-    return 0;
 }

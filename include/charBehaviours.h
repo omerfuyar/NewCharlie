@@ -1,5 +1,5 @@
 #pragma once
-#include "config.h"
+#include "Renderer.h"
 #include "shucio/shucio.h"
 #include <stddef.h>
 
@@ -22,26 +22,25 @@ typedef enum CHAR_ID
 
 void setAttributesForCharacter(CHAR_ID character);
 void setAttributesForLook(LOOK_ID look);
-int callBehaviourForCharacter(CHAR_ID character, const Map *map, Player *player, int newX, int newY);
+int callBehaviourForCharacter(CHAR_ID character, const Map *map, Player *player, MapCharacterData data);
 
-static int nullBehaviour(const Map *map, Player *player, int newX, int newY)
+static int nullBehaviour(const Map *map, Player *player, MapCharacterData data)
 {
     (void)map;
     (void)player;
-    (void)newX;
-    (void)newY;
+    (void)data;
     return 0;
 }
 
-static int floorBehaviour(const Map *map, Player *player, int newX, int newY)
+static int floorBehaviour(const Map *map, Player *player, MapCharacterData data)
 {
     SHU_SetCursorPosition(player->x + 1, player->y + 1);
 
     setAttributesForCharacter((CHAR_ID)(map->data[player->y][player->x]));
     SHU_PutCharacter(map->data[player->y][player->x]);
 
-    player->x = newX;
-    player->y = newY;
+    player->x = data.x;
+    player->y = data.y;
 
     SHU_SetCursorPosition(player->x + 1, player->y + 1);
     SHU_SetAttributes(SHUAttribute_Reset);
@@ -53,29 +52,31 @@ static int floorBehaviour(const Map *map, Player *player, int newX, int newY)
     return 0;
 }
 
-static int wallBehaviour(const Map *map, Player *player, int newX, int newY)
+static int wallBehaviour(const Map *map, Player *player, MapCharacterData data)
 {
     (void)map;
     (void)player;
-    (void)newX;
-    (void)newY;
+    (void)data;
     return 0;
 }
 
-static int portalBehaviour(const Map *map, Player *player, int newX, int newY)
+static int portalBehaviour(const Map *map, Player *player, MapCharacterData data)
 {
     (void)map;
     (void)player;
-    (void)newX;
-    (void)newY;
-    return 0; // todo
+    (void)data;
+
+    renderMap(&map[data.index], &player->x, &player->y);
+
+    return 0;
+
+    return 0;
 }
 
-static int npcBehaviour(const Map *map, Player *player, int newX, int newY)
+static int npcBehaviour(const Map *map, Player *player, MapCharacterData data)
 {
     (void)map;
     (void)player;
-    (void)newX;
-    (void)newY;
+    (void)data;
     return 0; // todo
 }

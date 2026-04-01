@@ -25,7 +25,6 @@ int main(const int argc, const char **argv)
 
     Map maps[MAP_MAX_COUNT] = {0};
     Portrait portraits[PORTRAIT_MAX_COUNT] = {0};
-    NPC npcs[NPC_MAX_COUNT] = {0};
     Player player = {0};
 
     int numMaps = loadMaps("resources/maps", maps, MAP_MAX_COUNT);
@@ -40,21 +39,14 @@ int main(const int argc, const char **argv)
         goto error;
     }
 
-    int numNPCs = loadNPCs("resources/npcs", npcs, NPC_MAX_COUNT);
-    if (numNPCs == 0)
-    {
-        goto error;
-    }
-
     Map *currentMap = &maps[0];
 
     renderBorders();
 
     // renderInputField("Go north", "Go south", "Go east", "Go west");m
-    renderTextField("Lorem ipsum dolor \"\\\\\" '\\?sit amet\\_', consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
+    // renderTextField("Lorem ipsum dolor \"\\\\\" '\\?sit amet\\_', consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
 
     renderMap(currentMap, &player.x, &player.y);
-    renderPlayer(currentMap, &player, SHUKey_Invalid);
 
     while (1)
     {

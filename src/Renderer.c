@@ -28,13 +28,13 @@ void setAttributesForLook(LOOK_ID look)
     }
 }
 
-int callBehaviourForCharacter(CHAR_ID character, const Map *map, Player *player, int newX, int newY)
+int callBehaviourForCharacter(CHAR_ID character, const Map *map, Player *player, MapCharacterData data)
 {
     switch (character)
     {
 #define CHAR_ENTRY(a, b, c, ...) \
     case CHAR_##a:               \
-        return c(map, player, newX, newY);
+        return c(map, player, data);
         CHAR_TABLE
 #undef CHAR_ENTRY
     }
@@ -193,6 +193,12 @@ void renderMap(const Map *map, int *playerX, int *playerY)
 
     *playerX = map->playerStartX;
     *playerY = map->playerStartY;
+
+    SHU_SetCursorPosition(*playerX + 1, *playerY + 1);
+
+    setAttributesForCharacter(CHAR_PLAYER);
+    SHU_PutCharacter(CHAR_PLAYER);
+    SHU_SetAttributes(SHUAttribute_Reset);
 }
 
 // on new interaction, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
@@ -224,7 +230,34 @@ int renderPlayer(const Map *map, Player *player, SHUKey key)
         return 0;
     }
 
-    int result = callBehaviourForCharacter(map->data[newY][newX], map, player, newX, newY);
+    MapCharacterData data = {0};
+
+    for (int i = 0; i < MAP_INTERACTABLE_MAX_COUNT; i++)
+    {
+        if (map->portals[i].x == newX && map->portals[i].y == newY)
+        {
+            data.index = map->portals[i].targetMapIndex;
+            data.x = newX;
+            data.y = newY;
+            goto skipPos;
+        }
+
+        if (map->npcs[i].x == newX && map->npcs[i].y == newY)
+        {
+            data.index = map->npcs[i].index;
+            data.x = newX;
+            data.y = newY;
+            goto skipPos;
+        }
+    }
+
+    data.index = -1;
+    data.x = newX;
+    data.y = newY;
+
+skipPos:
+
+    int result = callBehaviourForCharacter(map->data[newY][newX], map, player, data);
     if (result != 0)
     {
         return result;

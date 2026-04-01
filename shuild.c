@@ -21,6 +21,8 @@ int main(int argc, char **argv)
         SHU_CompilerAddFlags(SHUM_FLAGS_OPTIMIZATION_HIGH);
     }
 
+    SHU_CompilerAddFlags(" -Wl,--stack,4194304");
+
     SHU_ModuleBegin("NewCharlie", NULL);
     SHU_ModuleAddIncludeDirectory("include/");
     SHU_ModuleAddIncludeDirectory("dependencies/");
