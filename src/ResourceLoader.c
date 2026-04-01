@@ -151,7 +151,8 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
             currentNode->choiceCount = 0;
 
             int charsRead = 0;
-            scanCheck(lineBuffer + 2, 1, "%d \"%n\"", &currentNode->requiredFlag, &charsRead);
+            scanCheck(lineBuffer + 2, 1, "%d %n", &currentNode->requiredFlag, &charsRead);
+            //! read rest of the line as text, with protection against overflow
 
             strncpy(currentNode->text, (lineBuffer + 2) + charsRead, STRING_MAX_SIZE - 1);
             currentNode->text[STRING_MAX_SIZE - 1] = '\0';
@@ -169,7 +170,8 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
 
             NPCChoice *currentChoice = currentNode->choices + currentNode->choiceCount;
             int charsRead = 0;
-            scanCheck(lineBuffer + 2, 3, "%d,%d,%d \"%n\"", &currentChoice->requiredFlag, &currentChoice->flagToSet, &currentChoice->nextNodeIndex, &charsRead);
+            scanCheck(lineBuffer + 2, 3, "%d,%d,%d %n", &currentChoice->requiredFlag, &currentChoice->flagToSet, &currentChoice->nextNodeIndex, &charsRead);
+            //! read rest of the line as text, with protection against overflow
 
             // Same as above, string protection
             strncpy(currentChoice->text, (lineBuffer + 2) + charsRead, STRING_MAX_SIZE - 1);
