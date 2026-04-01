@@ -1,11 +1,23 @@
 #include "Renderer.h"
 #include "ResourceLoader.h"
 #include "StoryManager.h"
+#include <signal.h>
+
+void handleSignal(int signal)
+{
+    (void)signal;
+    SHU_ClearTerminal();
+    SHU_Terminate();
+}
 
 int main(const int argc, const char **argv)
 {
     (void)argc;
     (void)argv;
+
+    signal(SIGINT, handleSignal);
+    signal(SIGTERM, handleSignal);
+    signal(SIGSEGV, handleSignal);
 
     SHU_Initialize();
     SHU_SetTerminalAlternate(1);

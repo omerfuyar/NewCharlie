@@ -4,6 +4,8 @@
 #define SHUILD_IMPLEMENTATION
 #include "dependencies/shuild/shuild.h"
 
+#define STACK_SIZE "4194304"
+
 int main(int argc, char **argv)
 {
     SHU_CompilerTryConfigure("gcc");
@@ -14,14 +16,18 @@ int main(int argc, char **argv)
     if (argc > 1)
     {
         SHU_CompilerAddFlags(SHUM_FLAGS_WARNING_HIGH);
-        SHU_CompilerAddFlags(SHUM_FLAGS_DEBUG SHUM_FLAGS_WARNING_ERROR " -Wno-missing-declarations -Wno-switch -Wno-format-truncation -Wno-unused-function");
+        SHU_CompilerAddFlags(SHUM_FLAGS_DEBUG SHUM_FLAGS_WARNING_ERROR " -Wno-missing-declarations -Wno-switch -Wno-format-truncation -Wno-unused-function -DDEBUG -Wno-format-nonliteral");
     }
     else
     {
         SHU_CompilerAddFlags(SHUM_FLAGS_OPTIMIZATION_HIGH);
     }
 
-    SHU_CompilerAddFlags(" -Wl,--stack,4194304");
+#if SHUM_HOST_PLATFORM == SHUM_PLATFORM_WINDOWS
+    SHU_CompilerAddFlags(" -Wl,--stack," STACK_SIZE);
+#else
+    SHU_CompilerAddFlags(" -Wl,-z,stack-size=" STACK_SIZE);
+#endif
 
     SHU_ModuleBegin("NewCharlie", NULL);
     SHU_ModuleAddIncludeDirectory("include/");

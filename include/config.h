@@ -1,5 +1,7 @@
 #pragma once
 
+#define LOG_FILE "log.log"
+
 #define STRING_MAX_SIZE 128
 
 #define PLAYER_MAX_FLAGS 32
@@ -41,29 +43,37 @@ typedef enum LOOK_ID
 } LOOK_ID;
 #undef LOOK_ENTRY
 
-typedef struct DialogueChoice
+typedef struct NPCChoice
 {
-    char text[TEXT_FIELD_MAX_WIDTH];
-    int nextNodeIndex; // Which node to jump to (-1 to end)
-    int requiredFlag;  // Condition to show this choice (-1 for none)
-    int flagToSet;     // Provide an item/advance quest (-1 for none)
-} DialogueChoice;
-
-typedef struct DialogueNode
-{
-    char text[TEXT_FIELD_MAX_LENGTH];
     int requiredFlag;
-    int numChoices;
-    DialogueChoice choices[INPUT_FIELD_SELECTION_COUNT];
-} DialogueNode;
+    int flagToSet;
+    int nextNodeIndex;
+    char text[STRING_MAX_SIZE];
+} NPCChoice;
+
+typedef struct NPCNode
+{
+    int requiredFlag;
+    char text[STRING_MAX_SIZE];
+    int choiceCount;
+    NPCChoice choices[INPUT_FIELD_SELECTION_COUNT];
+} NPCNode;
+
+typedef struct Portrait
+{
+    int mapIndex;
+    int npcIndex;
+    char data[MAP_MAX_HEIGHT][MAP_MAX_WIDTH];
+} Portrait;
 
 typedef struct NPC
 {
     int index;
     int x;
     int y;
-    int numNodes;
-    DialogueNode nodes[NPC_NODE_MAX_COUNT];
+    int nodesCount;
+    Portrait *portrait;
+    NPCNode nodes[NPC_NODE_MAX_COUNT];
 } NPC;
 
 typedef struct Portal
@@ -85,11 +95,6 @@ typedef struct Map
     char data[MAP_MAX_HEIGHT][MAP_MAX_WIDTH];
 } Map;
 
-typedef struct Portrait
-{
-    char data[MAP_MAX_HEIGHT][MAP_MAX_WIDTH];
-} Portrait;
-
 typedef struct Player
 {
     char flags[PLAYER_MAX_FLAGS];
@@ -103,3 +108,9 @@ typedef struct MapCharacterData
     int x;
     int y;
 } MapCharacterData;
+
+#ifdef DEBUG
+int loglog(const char *format, ...);
+#else
+#define loglog(...)
+#endif

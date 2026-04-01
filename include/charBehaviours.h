@@ -1,7 +1,8 @@
 #pragma once
 #include "Renderer.h"
+#include "StoryManager.h"
 #include "shucio/shucio.h"
-#include <stddef.h>
+#include <stdio.h>
 
 // define how characters will look in the terminal and how will behave if player steps on them
 #define CHAR_TABLE                                                                           \
@@ -49,6 +50,8 @@ static int floorBehaviour(const Map *map, Player *player, MapCharacterData data)
     SHU_PutCharacter(CHAR_PLAYER);
     SHU_SetAttributes(SHUAttribute_Reset);
 
+    loglog("floor : player x %d, player y %d\n", player->x, player->y);
+
     return 0;
 }
 
@@ -57,26 +60,33 @@ static int wallBehaviour(const Map *map, Player *player, MapCharacterData data)
     (void)map;
     (void)player;
     (void)data;
+
+    loglog("wall : player x %d, player y %d\n", player->x, player->y);
+
     return 0;
 }
 
 static int portalBehaviour(const Map *map, Player *player, MapCharacterData data)
-{
+{ // data : index is the target map index
     (void)map;
     (void)player;
     (void)data;
 
-    renderMap(&map[data.index], &player->x, &player->y);
+    const Map *targetMap = &(map - map->index)[data.index];
 
-    return 0;
+    renderMap(targetMap, &player->x, &player->y);
+
+    loglog("portal : index %d, player x %d, player y %d\n", data.index, player->x, player->y);
 
     return 0;
 }
 
 static int npcBehaviour(const Map *map, Player *player, MapCharacterData data)
-{
-    (void)map;
-    (void)player;
-    (void)data;
+{ // data : index is the npc index in the map
+
+    const NPC *npc = map->npcs + data.index;
+
+    startDialogue(npc, player);
+
     return 0; // todo
 }

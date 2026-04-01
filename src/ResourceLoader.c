@@ -2,6 +2,7 @@
 #include "charBehaviours.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -10,69 +11,37 @@
 #include <sys/stat.h>
 #endif
 
-static int parseMapHeader(FILE *mapFile, char *lineBuffer, int lineBufferSize, Map *retMap)
+#define scanCheck(src, targetCount, format, ...)                                                                 \
+    do                                                                                                           \
+    {                                                                                                            \
+        if (sscanf(src, format, __VA_ARGS__) != targetCount)                                                     \
+        {                                                                                                        \
+            fprintf(stderr, "Error: Failed to parse line '%s' in map file. Expected format: %s\n", src, format); \
+            fclose(mapFile);                                                                                     \
+            return 1;                                                                                            \
+        }                                                                                                        \
+    } while (0)
+
+#ifdef DEBUG
+int loglog(const char *format, ...)
 {
-    // id
-    if (fgets(lineBuffer, lineBufferSize, mapFile) == NULL)
+    FILE *logFile = fopen(LOG_FILE, "a+");
+    if (!logFile)
     {
-        fprintf(stderr, "Error: Map file is empty.\n");
         return 1;
     }
 
-    if (lineBuffer[0] != 'i')
-    {
-        fprintf(stderr, "Error: Map file has invalid format. First (ID) line must start with 'i'.\n");
-        return 1;
-    }
+    va_list args;
+    va_start(args, format);
+    vfprintf(logFile, format, args);
+    va_end(args);
 
-    if (sscanf(lineBuffer + 2, "%d", &retMap->index) != 1)
-    {
-        fprintf(stderr, "Error: Map file has invalid format. Failed to read map index from first line.\n");
-        return 1;
-    }
-
-    // portal
-    if (fgets(lineBuffer, lineBufferSize, mapFile) == NULL)
-    {
-        fprintf(stderr, "Error: Map file does not contain a valid portal definition.\n");
-        return 1;
-    }
-
-    if (lineBuffer[0] != 'p')
-    {
-        fprintf(stderr, "Error: Map file has invalid format. Second (Portal) line must start with 'p'.\n");
-        return 1;
-    }
-
-    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->portals[0].targetMapIndex, &retMap->portals[1].targetMapIndex, &retMap->portals[2].targetMapIndex, &retMap->portals[3].targetMapIndex) != 4)
-    {
-        fprintf(stderr, "Error: Map file has invalid format. Failed to read portal index from second line.\n");
-        return 1;
-    }
-
-    // interactable
-    if (fgets(lineBuffer, lineBufferSize, mapFile) == NULL)
-    {
-        fprintf(stderr, "Error: Map file does not contain a valid interactable definition.\n");
-        return 1;
-    }
-
-    if (lineBuffer[0] != 'n')
-    {
-        fprintf(stderr, "Error: Map file has invalid format. Third (NPC) line must start with 'n'.\n");
-        return 1;
-    }
-
-    if (sscanf(lineBuffer + 2, "%d,%d,%d,%d", &retMap->npcs[0].index, &retMap->npcs[1].index, &retMap->npcs[2].index, &retMap->npcs[3].index) != 4)
-    {
-        fprintf(stderr, "Error: Map file has invalid format. Failed to read interactable index from third line.\n");
-        return 1;
-    }
-
+    fclose(logFile);
     return 0;
 }
+#endif
 
-static int loadMap(const char *file, Map *retMap)
+static int loadMap(const char *file, Map *retBufStart, int maxMaps)
 {
     FILE *mapFile = fopen(file, "r");
 
@@ -82,22 +51,146 @@ static int loadMap(const char *file, Map *retMap)
         return 1;
     }
 
-    char lineBuffer[MAP_MAX_WIDTH + 8] = {0};
+    char lineBuffer[STRING_MAX_SIZE * 2] = {0};
     int lineCount = 0;
     char playerFound = 0;
     char portalsFound = 0;
+    char npcsFound = 0;
 
-    lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0'; // id line
-    if (parseMapHeader(mapFile, lineBuffer, MAP_MAX_WIDTH + 8, retMap) != 0)
+    Map *map = NULL;
+    NPC *currentNpc = NULL;
+    NPCNode *currentNode = NULL;
+
+    while (fgets(lineBuffer, sizeof(lineBuffer), mapFile))
     {
-        fprintf(stderr, "Error: Failed to parse header of map file '%s'.\n", file);
+        lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0'; // strip trailing newline characters
+
+        if (lineBuffer[0] == '\0')
+        {
+            continue;
+        }
+
+        char prefix = lineBuffer[0];
+
+        if (prefix == 'i')
+        {
+            int indexBuffer = -1;
+            scanCheck(lineBuffer + 2, 1, "%d", &indexBuffer);
+
+            if (indexBuffer < 0 || indexBuffer >= maxMaps)
+            {
+                fprintf(stderr, "Error: Map file '%s' has invalid map index %d. Max index is %d.\n", file, indexBuffer, maxMaps - 1);
+                fclose(mapFile);
+                return 1;
+            }
+
+            map = retBufStart + indexBuffer;
+            map->index = indexBuffer;
+        }
+        else if (prefix == 'p')
+        {
+            scanCheck(lineBuffer + 2, MAP_INTERACTABLE_MAX_COUNT, "%d,%d,%d,%d",
+                      &map->portals[0].targetMapIndex, &map->portals[1].targetMapIndex,
+                      &map->portals[2].targetMapIndex, &map->portals[3].targetMapIndex);
+        }
+        else if (prefix == 'n')
+        {
+            scanCheck(lineBuffer + 2, MAP_INTERACTABLE_MAX_COUNT, "%d,%d,%d,%d",
+                      &map->npcs[0].index, &map->npcs[1].index,
+                      &map->npcs[2].index, &map->npcs[3].index);
+        }
+        else if (prefix == 'N')
+        {
+            int npcId = -1;
+            scanCheck(lineBuffer + 2, 1, "%d", &npcId);
+
+            for (int i = 0; i < MAP_INTERACTABLE_MAX_COUNT; i++)
+            {
+                if (map->npcs[i].index == npcId)
+                {
+                    currentNpc = map->npcs + i;
+                    currentNpc->nodesCount = 0;
+                    break;
+                }
+            }
+
+            if (currentNpc == NULL)
+            {
+                fprintf(stderr, "Error: NPC with ID %d defined with 'N' but not found in the 'n' line list.\n", npcId);
+                fclose(mapFile);
+                return 1;
+            }
+        }
+        else if (prefix == 'v')
+        {
+            if (currentNpc->nodesCount >= NPC_NODE_MAX_COUNT)
+            {
+                fprintf(stderr, "Error: Too many nodes for NPC %d. Max %d.\n", currentNpc->index, NPC_NODE_MAX_COUNT);
+                fclose(mapFile);
+                return 1;
+            }
+
+            currentNode = currentNpc->nodes + currentNpc->nodesCount;
+            currentNode->choiceCount = 0;
+
+            int charsRead = 0;
+            scanCheck(lineBuffer + 2, 1, "%d \"%n\"", &currentNode->requiredFlag, &charsRead);
+
+            strncpy(currentNode->text, (lineBuffer + 2) + charsRead, STRING_MAX_SIZE - 1);
+            currentNode->text[STRING_MAX_SIZE - 1] = '\0';
+
+            currentNpc->nodesCount++;
+        }
+        else if (prefix == 'c')
+        {
+            if (currentNode->choiceCount >= INPUT_FIELD_SELECTION_COUNT)
+            {
+                fprintf(stderr, "Error: Too many choices in a single node for NPC %d. Max %d.\n", currentNpc->index, INPUT_FIELD_SELECTION_COUNT);
+                fclose(mapFile);
+                return 1;
+            }
+
+            NPCChoice *currentChoice = currentNode->choices + currentNode->choiceCount;
+            int charsRead = 0;
+            scanCheck(lineBuffer + 2, 3, "%d,%d,%d \"%n\"", &currentChoice->requiredFlag, &currentChoice->flagToSet, &currentChoice->nextNodeIndex, &charsRead);
+
+            // Same as above, string protection
+            strncpy(currentChoice->text, (lineBuffer + 2) + charsRead, STRING_MAX_SIZE - 1);
+            currentChoice->text[STRING_MAX_SIZE - 1] = '\0';
+
+            currentNode->choiceCount++;
+        }
+        else if (prefix == 'd')
+        {
+            break;
+        }
+        else if (prefix == '#')
+        {
+            continue;
+        }
+        else
+        {
+            fprintf(stderr, "Error: Map file '%s' has invalid format. Line %d starts with invalid prefix '%c'.\n", file, lineCount + 1, prefix);
+            fclose(mapFile);
+            return 1;
+        }
+    }
+
+    if (map == NULL)
+    {
+        fprintf(stderr, "Error: Map index 'i' was never defined before parsing data in '%s'.\n", file);
         fclose(mapFile);
         return 1;
     }
 
-    while (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
+    while (fgets(lineBuffer, sizeof(lineBuffer), mapFile) != NULL)
     {
         lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0';
+
+        if (lineBuffer[0] == '\0')
+        {
+            continue;
+        }
 
         lineCount++;
 
@@ -131,8 +224,8 @@ static int loadMap(const char *file, Map *retMap)
                     return 1;
                 }
 
-                retMap->playerStartX = posX;
-                retMap->playerStartY = posY;
+                map->playerStartX = posX;
+                map->playerStartY = posY;
                 playerFound = 1;
                 lineBuffer[i] = ' ';
                 break;
@@ -144,14 +237,26 @@ static int loadMap(const char *file, Map *retMap)
                     return 1;
                 }
 
-                retMap->portals[(int)portalsFound].x = posX;
-                retMap->portals[(int)portalsFound].y = posY;
+                map->portals[(int)portalsFound].x = posX;
+                map->portals[(int)portalsFound].y = posY;
                 portalsFound++;
+                break;
+            case CHAR_NPC:
+                if (npcsFound >= MAP_INTERACTABLE_MAX_COUNT)
+                {
+                    fprintf(stderr, "Error: Too many NPCs found in map file '%s'. Maximum is %d.\n", file, MAP_INTERACTABLE_MAX_COUNT);
+                    fclose(mapFile);
+                    return 1;
+                }
+
+                map->npcs[(int)npcsFound].x = posX;
+                map->npcs[(int)npcsFound].y = posY;
+                npcsFound++;
                 break;
             }
         }
 
-        memcpy(retMap->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
+        memcpy(map->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
     }
 
     fclose(mapFile);
@@ -165,7 +270,7 @@ static int loadMap(const char *file, Map *retMap)
     return 0;
 }
 
-static int loadPortrait(const char *file, Portrait *retPortals)
+static int loadPortrait(const char *file, Portrait *retBufStart, int maxPortraits)
 {
     FILE *mapFile = fopen(file, "r");
 
@@ -178,9 +283,57 @@ static int loadPortrait(const char *file, Portrait *retPortals)
     char lineBuffer[MAP_MAX_WIDTH + 8] = {0};
     int lineCount = 0;
 
+    if (fgets(lineBuffer, sizeof(lineBuffer), mapFile) == NULL)
+    {
+        fprintf(stderr, "Error: Portrait file '%s' is empty.\n", file);
+        fclose(mapFile);
+        return 1;
+    }
+
+    if (lineBuffer[0] != 'i')
+    {
+        fprintf(stderr, "Error: First line of portrait file '%s' must start with 'i' followed by map index and NPC index.\n", file);
+        fclose(mapFile);
+        return 1;
+    }
+
+    int bufMapIndex = -1;
+    int bufNpcIndex = -1;
+
+    if (sscanf(lineBuffer + 2, "%d,%d", &bufMapIndex, &bufNpcIndex) != 2)
+    {
+        fprintf(stderr, "Error: Failed to parse first line of portrait file '%s'. Expected format: i mapIndex,npcIndex\n", file);
+        fclose(mapFile);
+        return 1;
+    }
+
+    if (bufMapIndex < 0 || bufMapIndex >= MAP_MAX_COUNT)
+    {
+        fprintf(stderr, "Error: Map index in portrait file '%s' is out of bounds. Must be between 0 and %d.\n", file, (maxPortraits / MAP_INTERACTABLE_MAX_COUNT) - 1);
+        fclose(mapFile);
+        return 1;
+    }
+
+    if (bufNpcIndex < 0 || bufNpcIndex >= MAP_INTERACTABLE_MAX_COUNT)
+    {
+        fprintf(stderr, "Error: NPC index in portrait file '%s' is out of bounds. Must be between 0 and %d.\n", file, MAP_INTERACTABLE_MAX_COUNT - 1);
+        fclose(mapFile);
+        return 1;
+    }
+
+    Portrait *portrait = retBufStart + (bufMapIndex * MAP_INTERACTABLE_MAX_COUNT + bufNpcIndex);
+
+    portrait->mapIndex = bufMapIndex;
+    portrait->npcIndex = bufNpcIndex;
+
     while (fgets(lineBuffer, MAP_MAX_WIDTH + 8, mapFile) != NULL)
     {
         lineBuffer[strcspn(lineBuffer, "\r\n")] = '\0';
+
+        if (lineBuffer[0] == '\0')
+        {
+            continue;
+        }
 
         lineCount++;
 
@@ -199,7 +352,7 @@ static int loadPortrait(const char *file, Portrait *retPortals)
             return 1;
         }
 
-        memcpy(retPortals->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
+        memcpy(portrait->data[lineCount - 1], lineBuffer, MAP_MAX_WIDTH);
     }
 
     fclose(mapFile);
@@ -207,10 +360,10 @@ static int loadPortrait(const char *file, Portrait *retPortals)
     return 0;
 }
 
-int loadMaps(const char *directory, Map *retMaps, int maxMaps)
+int loadMaps(const char *directory, Map *retBufStart, int maxMaps)
 {
-    int loadedMaps = 0;
     char pattern[STRING_MAX_SIZE] = {0};
+    int loadedMaps = 0;
 
 #ifdef _WIN32
     WIN32_FIND_DATAA ffd = {0};
@@ -234,7 +387,7 @@ int loadMaps(const char *directory, Map *retMaps, int maxMaps)
 
         snprintf(pattern, STRING_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
 
-        if (loadMap(pattern, &retMaps[loadedMaps]) != 0)
+        if (loadMap(pattern, retBufStart, maxMaps) != 0)
         {
             fprintf(stderr, "Error: Failed to load map file '%s' from folder '%s'.\n", ffd.cFileName, directory);
             FindClose(hFind);
@@ -272,7 +425,7 @@ int loadMaps(const char *directory, Map *retMaps, int maxMaps)
 
         snprintf(pattern, STRING_MAX_SIZE, "%s/%s", directory, entry->d_name);
 
-        if (loadMap(pattern, &retMaps[loadedMaps]) != 0)
+        if (loadMap(pattern, retBufStart, maxMaps) != 0)
         {
             fprintf(stderr, "Error: Failed to load map file '%s' from folder '%s'.\n", entry->d_name, directory);
             closedir(dir);
@@ -285,10 +438,29 @@ int loadMaps(const char *directory, Map *retMaps, int maxMaps)
     closedir(dir);
 #endif
 
+    for (int i = 0; i < loadedMaps; i++)
+    {
+        const Map *currentMap = retBufStart + i;
+
+        for (int j = 0; j < MAP_INTERACTABLE_MAX_COUNT; j++)
+        {
+            const Portal *currentPortal = currentMap->portals + j;
+
+            if (currentPortal->targetMapIndex >= loadedMaps)
+            {
+                fprintf(stderr, "Error: Map file with index %d has a portal with target map index %d, but only %d maps were loaded. Make sure all portal target indices are between -1 and %d and there are no duplicate map indices.\n",
+                        currentMap->index, currentPortal->targetMapIndex, loadedMaps, maxMaps - 1);
+                return 0;
+            }
+
+            // todo maybe also for npcs
+        }
+    }
+
     return loadedMaps;
 }
 
-int loadPortraits(const char *directory, Portrait *retPortals, int maxPortraits)
+int loadPortraits(const char *directory, Portrait *retPortraits, int maxPortraits)
 {
     int loadedPortraits = 0;
     char pattern[STRING_MAX_SIZE] = {0};
@@ -315,7 +487,7 @@ int loadPortraits(const char *directory, Portrait *retPortals, int maxPortraits)
 
         snprintf(pattern, STRING_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
 
-        if (loadPortrait(pattern, &retPortals[loadedPortraits]) != 0)
+        if (loadPortrait(pattern, retPortraits, maxPortraits) != 0)
         {
             fprintf(stderr, "Error: Failed to load portrait file '%s' from folder '%s'.\n", ffd.cFileName, directory);
             FindClose(hFind);
@@ -353,7 +525,7 @@ int loadPortraits(const char *directory, Portrait *retPortals, int maxPortraits)
 
         snprintf(pattern, STRING_MAX_SIZE, "%s/%s", directory, entry->d_name);
 
-        if (loadPortrait(pattern, &retPortals[loadedPortraits]) != 0)
+        if (loadPortrait(pattern, retPortraits, maxPortraits) != 0)
         {
             fprintf(stderr, "Error: Failed to load portrait file '%s' from folder '%s'.\n", entry->d_name, directory);
             closedir(dir);
