@@ -83,10 +83,9 @@ static int portalBehaviour(const Map *map, Player *player, MapCharacterData data
 
 static int npcBehaviour(const Map *map, Player *player, MapCharacterData data)
 { // data : index is the npc index in the map
-
     const NPC *npc = map->npcs + data.index;
 
-    startDialogue(npc, player);
+    startDialogue(map, npc, player);
 
     return 0;
 }

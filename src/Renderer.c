@@ -60,8 +60,26 @@ void renderBorders(void)
         SHU_PutCharacter(CHAR_BORDER_HORIZONTAL);
     }
 
-    SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT);
-    for (int x = 0; x < TEXT_FIELD_MAX_WIDTH; x++)
+    SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(1) - 1);
+    for (int x = 0; x < INPUT_FIELD_MAX_WIDTH; x++)
+    {
+        SHU_PutCharacter(CHAR_BORDER_HORIZONTAL);
+    }
+
+    SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(2) - 1);
+    for (int x = 0; x < INPUT_FIELD_MAX_WIDTH; x++)
+    {
+        SHU_PutCharacter(CHAR_BORDER_HORIZONTAL);
+    }
+
+    SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(3) - 1);
+    for (int x = 0; x < INPUT_FIELD_MAX_WIDTH; x++)
+    {
+        SHU_PutCharacter(CHAR_BORDER_HORIZONTAL);
+    }
+
+    SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(4) - 1);
+    for (int x = 0; x < INPUT_FIELD_MAX_WIDTH; x++)
     {
         SHU_PutCharacter(CHAR_BORDER_HORIZONTAL);
     }
@@ -85,6 +103,21 @@ void renderBorders(void)
     }
 
     SHU_SetAttributes(SHUAttribute_Reset);
+}
+
+void clearTextField(void)
+{
+    for (int y = 0; y < TEXT_FIELD_MAX_HEIGHT; y++)
+    {
+        SHU_SetCursorPosition(TEXT_FIELD_START_X, TEXT_FIELD_START_Y + y);
+
+        for (int x = 0; x < TEXT_FIELD_MAX_WIDTH; x++)
+        {
+            setAttributesForCharacter(CHAR_FLOOR);
+            SHU_PutCharacter(CHAR_FLOOR);
+            SHU_SetAttributes(SHUAttribute_Reset);
+        }
+    }
 }
 
 // on new text, TEXT_FIELD_MAX_WIDTH x MAP_MAX_HEIGHT limit
@@ -115,9 +148,27 @@ void renderTextField(const char *text)
         else
         {
         putChar:
-            SHU_SetCursorPosition(MAP_MAX_WIDTH + (cursorIndex % TEXT_FIELD_MAX_WIDTH) + 2, (cursorIndex / TEXT_FIELD_MAX_WIDTH) + 1);
+            SHU_SetCursorPosition(TEXT_FIELD_START_X + (cursorIndex % TEXT_FIELD_MAX_WIDTH), TEXT_FIELD_START_Y + (cursorIndex / TEXT_FIELD_MAX_WIDTH));
             SHU_PutCharacter(character);
             cursorIndex++;
+        }
+    }
+}
+
+void clearInputField(void)
+{
+    for (int y = 0; y < INPUT_FIELD_SELECTION_HEIGHT; y++)
+    {
+        for (int n = 0; n < INPUT_FIELD_SELECTION_COUNT; n++)
+        {
+            SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(n + 1) + y);
+
+            for (int x = 0; x < INPUT_FIELD_MAX_WIDTH; x++)
+            {
+                setAttributesForCharacter(CHAR_FLOOR);
+                SHU_PutCharacter(CHAR_FLOOR);
+                SHU_SetAttributes(SHUAttribute_Reset);
+            }
         }
     }
 }
@@ -125,28 +176,31 @@ void renderTextField(const char *text)
 // on new selection, (MAP_MAX_WIDTH + TEXT_FIELD_MAX_WIDTH + 1) x INPUT_FIELD_MAX_HEIGHT limit
 int renderInputField(const char *selection1, const char *selection2, const char *selection3, const char *selection4)
 {
+    clearInputField();
+
+    // todo wrap
     if (selection1 != NULL)
     {
-        SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT + 1);
-        SHU_PutString("> 1: %.*s", TEXT_FIELD_MAX_WIDTH, selection1);
+        SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(1));
+        SHU_PutString("> 1: %.*s", INPUT_FIELD_MAX_WIDTH, selection1);
     }
 
     if (selection2 != NULL)
     {
-        SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT + 2);
-        SHU_PutString("> 2: %.*s", TEXT_FIELD_MAX_WIDTH, selection2);
+        SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(2));
+        SHU_PutString("> 2: %.*s", INPUT_FIELD_MAX_WIDTH, selection2);
     }
 
     if (selection3 != NULL)
     {
-        SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT + 3);
-        SHU_PutString("> 3: %.*s", TEXT_FIELD_MAX_WIDTH, selection3);
+        SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(3));
+        SHU_PutString("> 3: %.*s", INPUT_FIELD_MAX_WIDTH, selection3);
     }
 
     if (selection4 != NULL)
     {
-        SHU_SetCursorPosition(MAP_MAX_WIDTH + 2, MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT + 4);
-        SHU_PutString("> 4: %.*s", TEXT_FIELD_MAX_WIDTH, selection4);
+        SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(4));
+        SHU_PutString("> 4: %.*s", INPUT_FIELD_MAX_WIDTH, selection4);
     }
 
     while (1)

@@ -2,9 +2,10 @@
 #include "Renderer.h"
 #include <stddef.h>
 
-int startDialogue(const NPC *npc, Player *player)
+int startDialogue(const Map *map, const NPC *npc, Player *player)
 {
     (void)player;
+    (void)map;
     if (npc->portrait != NULL)
     {
         renderPortrait(npc->portrait);
@@ -16,5 +17,9 @@ int startDialogue(const NPC *npc, Player *player)
                      npc->nodes[0].choices[1].text,
                      npc->nodes[0].choices[2].text,
                      npc->nodes[0].choices[3].text);
+
+    clearInputField();
+    clearTextField();
+
     return 0;
 }
