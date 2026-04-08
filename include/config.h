@@ -2,7 +2,10 @@
 
 #define LOG_FILE "log.log"
 
-#define STRING_MAX_SIZE 128
+#define FILE_NAME_MAX_SIZE 256
+#define MAP_LINE_MAX_SIZE 512
+#define NODE_TEXT_SIZE 256
+#define CHOICE_TEXT_SIZE 128
 
 #define PLAYER_MAX_FLAGS 32
 
@@ -52,16 +55,15 @@ typedef enum LOOK_ID
 
 typedef struct NPCChoice
 {
-    int requiredFlag;
-    int flagToSet;
+    int requiredFlags;
+    int action;
     int nextNodeIndex;
-    char text[STRING_MAX_SIZE];
+    char text[CHOICE_TEXT_SIZE];
 } NPCChoice;
 
 typedef struct NPCNode
 {
-    int requiredFlag;
-    char text[STRING_MAX_SIZE];
+    char text[NODE_TEXT_SIZE];
     int choiceCount;
     NPCChoice choices[INPUT_FIELD_SELECTION_COUNT];
 } NPCNode;

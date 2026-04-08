@@ -1,15 +1,17 @@
-i 0
-p 0,-1,-1,-1
-n 0,-1,-1,-1
+MAP_ID 0
+PORTALS 0
+NPCS 0
 
-N 0,0
-v -1 Hello there \?adventurer\_! Have you found my hammer?
-c -1,-1,-1 Not yet.
-c 5,6,1 Yes, here it is!
-v 6 Thank you for finding my hammer!
-c -1,-1,-1 You're welcome.
+NPC 0 PORTRAIT 0
 
-d
+NODE Hello there \?adventurer\_! Have you found my hammer?
+CHOICE req:-1 set:-1 goto:-1 Not yet.
+CHOICE req:5 set:6 goto:1 Yes, here it is!
+
+NODE Thank you for finding my hammer!
+CHOICE req:-1 set:-1 goto:-1 You're welcome.
+
+GRID
 ################################################################
 #@                                                             #
 #                                                           ####

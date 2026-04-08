@@ -51,7 +51,7 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
         return 1;
     }
 
-    char lineBuffer[STRING_MAX_SIZE * 2] = {0};
+    char lineBuffer[MAP_LINE_MAX_SIZE] = {0};
     int lineCount = 0;
     char playerFound = 0;
     char portalsFound = 0;
@@ -70,12 +70,10 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
             continue;
         }
 
-        char prefix = lineBuffer[0];
-
-        if (prefix == 'i')
+        if (strncmp(lineBuffer, "MAP_ID ", 7) == 0)
         {
             int indexBuffer = -1;
-            scanCheck(lineBuffer + 2, 1, "%d", &indexBuffer);
+            scanCheck(lineBuffer + 7, 1, "%d", &indexBuffer);
 
             if (indexBuffer < 0 || indexBuffer >= maxMaps)
             {
@@ -85,42 +83,63 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
             }
 
             map = retBufStart + indexBuffer;
+            memset(map, 0, sizeof(Map)); // Clean stale/garbage data
             map->index = indexBuffer;
+
+            // Pre-initialize targets to -1 (empty)
+            for (int i = 0; i < MAP_INTERACTABLE_MAX_COUNT; i++)
+            {
+                map->portals[i].targetMapIndex = -1;
+                map->npcs[i].index = -1;
+            }
         }
-        else if (prefix == 'p')
+        else if (strncmp(lineBuffer, "PORTALS ", 8) == 0)
         {
-            scanCheck(lineBuffer + 2, MAP_INTERACTABLE_MAX_COUNT, "%d,%d,%d,%d",
-                      &map->portals[0].targetMapIndex, &map->portals[1].targetMapIndex,
-                      &map->portals[2].targetMapIndex, &map->portals[3].targetMapIndex);
+            char *parseCursor = lineBuffer + 8;
+            int bytesRead = 0;
+
+            for (int i = 0; i < MAP_INTERACTABLE_MAX_COUNT; i++)
+            {
+                if (sscanf(parseCursor, "%d%n", &map->portals[i].targetMapIndex, &bytesRead) != 1)
+                {
+                    break;
+                }
+
+                parseCursor += bytesRead;
+
+                if (*parseCursor == ',')
+                {
+                    parseCursor++;
+                }
+            }
         }
-        else if (prefix == 'n')
+        else if (strncmp(lineBuffer, "NPCS ", 5) == 0)
         {
-            scanCheck(lineBuffer + 2, MAP_INTERACTABLE_MAX_COUNT, "%d,%d,%d,%d",
-                      &map->npcs[0].index, &map->npcs[1].index,
-                      &map->npcs[2].index, &map->npcs[3].index);
+            char *parseCursor = lineBuffer + 5;
+            int bytesRead = 0;
+
+            for (int i = 0; i < MAP_INTERACTABLE_MAX_COUNT; i++)
+            {
+                if (sscanf(parseCursor, "%d%n", &map->npcs[i].index, &bytesRead) != 1)
+                {
+                    break;
+                }
+
+                parseCursor += bytesRead;
+
+                if (*parseCursor == ',')
+                {
+                    parseCursor++;
+                }
+            }
         }
-        else if (prefix == 'N')
+        else if (strncmp(lineBuffer, "NPC ", 4) == 0)
         {
             int npcId = -1;
             int portraitIndex = -1;
-            scanCheck(lineBuffer + 2, 2, "%d,%d", &npcId, &portraitIndex);
+            scanCheck(lineBuffer + 4, 2, "%d PORTRAIT %d", &npcId, &portraitIndex);
 
-            if (portraitIndex > -1)
-            {
-                if (portraitIndex >= maxPortraits)
-                {
-                    fprintf(stderr, "Error: Portrait index %d for NPC %d in map file '%s' is out of bounds. Max index is %d.\n", portraitIndex, npcId, file, maxPortraits - 1);
-                    fclose(mapFile);
-                    return 1;
-                }
-
-                map->npcs[npcId].portrait = portraits + portraitIndex;
-            }
-            else
-            {
-                map->npcs[npcId].portrait = NULL;
-            }
-
+            currentNpc = NULL;
             for (int i = 0; i < MAP_INTERACTABLE_MAX_COUNT; i++)
             {
                 if (map->npcs[i].index == npcId)
@@ -133,12 +152,28 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
 
             if (currentNpc == NULL)
             {
-                fprintf(stderr, "Error: NPC with ID %d defined with 'N' but not found in the 'n' line list.\n", npcId);
+                fprintf(stderr, "Error: NPC with ID %d defined with 'NPC' but not found in the 'NPCS' line list.\n", npcId);
                 fclose(mapFile);
                 return 1;
             }
+
+            if (portraitIndex > -1)
+            {
+                if (portraitIndex >= maxPortraits)
+                {
+                    fprintf(stderr, "Error: Portrait index %d for NPC %d in map file '%s' is out of bounds. Max index is %d.\n", portraitIndex, npcId, file, maxPortraits - 1);
+                    fclose(mapFile);
+                    return 1;
+                }
+
+                currentNpc->portrait = portraits + portraitIndex;
+            }
+            else
+            {
+                currentNpc->portrait = NULL;
+            }
         }
-        else if (prefix == 'v')
+        else if (strncmp(lineBuffer, "NODE ", 5) == 0)
         {
             if (currentNpc->nodesCount >= NPC_NODE_MAX_COUNT)
             {
@@ -150,16 +185,12 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
             currentNode = currentNpc->nodes + currentNpc->nodesCount;
             currentNode->choiceCount = 0;
 
-            int charsRead = 0;
-            scanCheck(lineBuffer + 2, 1, "%d %n", &currentNode->requiredFlag, &charsRead);
-            //! read rest of the line as text, with protection against overflow
-
-            strncpy(currentNode->text, (lineBuffer + 2) + charsRead, STRING_MAX_SIZE - 1);
-            currentNode->text[STRING_MAX_SIZE - 1] = '\0';
+            strncpy(currentNode->text, lineBuffer + 5, NODE_TEXT_SIZE - 1);
+            currentNode->text[NODE_TEXT_SIZE - 1] = '\0';
 
             currentNpc->nodesCount++;
         }
-        else if (prefix == 'c')
+        else if (strncmp(lineBuffer, "CHOICE ", 7) == 0)
         {
             if (currentNode->choiceCount >= INPUT_FIELD_SELECTION_COUNT)
             {
@@ -170,26 +201,25 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
 
             NPCChoice *currentChoice = currentNode->choices + currentNode->choiceCount;
             int charsRead = 0;
-            scanCheck(lineBuffer + 2, 3, "%d,%d,%d %n", &currentChoice->requiredFlag, &currentChoice->flagToSet, &currentChoice->nextNodeIndex, &charsRead);
+            scanCheck(lineBuffer + 7, 3, "req:%d set:%d goto:%d %n", &currentChoice->requiredFlags, &currentChoice->action, &currentChoice->nextNodeIndex, &charsRead);
             //! read rest of the line as text, with protection against overflow
 
-            // Same as above, string protection
-            strncpy(currentChoice->text, (lineBuffer + 2) + charsRead, STRING_MAX_SIZE - 1);
-            currentChoice->text[STRING_MAX_SIZE - 1] = '\0';
+            strncpy(currentChoice->text, (lineBuffer + 7) + charsRead, CHOICE_TEXT_SIZE - 1);
+            currentChoice->text[CHOICE_TEXT_SIZE - 1] = '\0';
 
             currentNode->choiceCount++;
         }
-        else if (prefix == 'd')
+        else if (strncmp(lineBuffer, "GRID", 4) == 0)
         {
             break;
         }
-        else if (prefix == '#')
+        else if (lineBuffer[0] == '#')
         {
             continue;
         }
         else
         {
-            fprintf(stderr, "Error: Map file '%s' has invalid format. Line %d starts with invalid prefix '%c'.\n", file, lineCount + 1, prefix);
+            fprintf(stderr, "Error: Map file '%s' has invalid format. Line %d starts with invalid prefix '%s'.\n", file, lineCount + 1, lineBuffer);
             fclose(mapFile);
             return 1;
         }
@@ -197,7 +227,7 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
 
     if (map == NULL)
     {
-        fprintf(stderr, "Error: Map index 'i' was never defined before parsing data in '%s'.\n", file);
+        fprintf(stderr, "Error: Map index 'MAP_ID' was never defined before parsing data in '%s'.\n", file);
         fclose(mapFile);
         return 1;
     }
@@ -365,12 +395,12 @@ static int loadPortrait(const char *file, Portrait *retBufStart, int maxPortrait
 
 int loadMaps(const char *directory, const Portrait *portraits, int maxPortraits, Map *retBufStart, int maxMaps)
 {
-    char pattern[STRING_MAX_SIZE] = {0};
+    char pattern[FILE_NAME_MAX_SIZE] = {0};
     int loadedMaps = 0;
 
 #ifdef _WIN32
     WIN32_FIND_DATAA ffd = {0};
-    snprintf(pattern, STRING_MAX_SIZE, "%s\\*.map", directory);
+    snprintf(pattern, FILE_NAME_MAX_SIZE, "%s\\*.map", directory);
 
     HANDLE hFind = FindFirstFileA(pattern, &ffd);
     if (hFind == INVALID_HANDLE_VALUE)
@@ -388,7 +418,7 @@ int loadMaps(const char *directory, const Portrait *portraits, int maxPortraits,
             return 0;
         }
 
-        snprintf(pattern, STRING_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
+        snprintf(pattern, FILE_NAME_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
 
         if (loadMap(pattern, portraits, maxPortraits, retBufStart, maxMaps) != 0)
         {
@@ -426,7 +456,7 @@ int loadMaps(const char *directory, const Portrait *portraits, int maxPortraits,
             return 0;
         }
 
-        snprintf(pattern, STRING_MAX_SIZE, "%s/%s", directory, entry->d_name);
+        snprintf(pattern, FILE_NAME_MAX_SIZE, "%s/%s", directory, entry->d_name);
 
         if (loadMap(pattern, portraits, maxPortraits, retBufStart, maxMaps) != 0)
         {
@@ -466,11 +496,11 @@ int loadMaps(const char *directory, const Portrait *portraits, int maxPortraits,
 int loadPortraits(const char *directory, Portrait *retPortraits, int maxPortraits)
 {
     int loadedPortraits = 0;
-    char pattern[STRING_MAX_SIZE] = {0};
+    char pattern[FILE_NAME_MAX_SIZE] = {0};
 
 #ifdef _WIN32
     WIN32_FIND_DATAA ffd = {0};
-    snprintf(pattern, STRING_MAX_SIZE, "%s\\*.por", directory);
+    snprintf(pattern, FILE_NAME_MAX_SIZE, "%s\\*.por", directory);
 
     HANDLE hFind = FindFirstFileA(pattern, &ffd);
     if (hFind == INVALID_HANDLE_VALUE)
@@ -488,7 +518,7 @@ int loadPortraits(const char *directory, Portrait *retPortraits, int maxPortrait
             return 0;
         }
 
-        snprintf(pattern, STRING_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
+        snprintf(pattern, FILE_NAME_MAX_SIZE, "%s\\%s", directory, ffd.cFileName);
 
         if (loadPortrait(pattern, retPortraits, maxPortraits) != 0)
         {
@@ -526,7 +556,7 @@ int loadPortraits(const char *directory, Portrait *retPortraits, int maxPortrait
             return 0;
         }
 
-        snprintf(pattern, STRING_MAX_SIZE, "%s/%s", directory, entry->d_name);
+        snprintf(pattern, FILE_NAME_MAX_SIZE, "%s/%s", directory, entry->d_name);
 
         if (loadPortrait(pattern, retPortraits, maxPortraits) != 0)
         {
