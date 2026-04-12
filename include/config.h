@@ -32,6 +32,7 @@
 
 #define INPUT_FIELD_MAX_WIDTH TEXT_FIELD_MAX_WIDTH
 #define INPUT_FIELD_MAX_HEIGHT (INPUT_FIELD_SELECTION_COUNT * (INPUT_FIELD_SELECTION_HEIGHT + 1) - 1)
+#define INPUT_FILED_MAX_TEXT (INPUT_FIELD_MAX_WIDTH * INPUT_FIELD_MAX_HEIGHT)
 #define INPUT_FIELD_START_X (MAP_MAX_WIDTH + 2)
 #define INPUT_FIELD_START_Y(n) ((n) * (INPUT_FIELD_SELECTION_HEIGHT + 1) + TEXT_FIELD_MAX_HEIGHT - 1)
 
@@ -41,28 +42,17 @@
 #define TEXT_FIELD_MAX_LENGTH (TEXT_FIELD_MAX_WIDTH * (MAP_MAX_HEIGHT - INPUT_FIELD_MAX_HEIGHT - 1))
 #define INPUT_FIELD_SELECTION_MAX_LENGTH (TEXT_FIELD_MAX_WIDTH * INPUT_FIELD_SELECTION_HEIGHT)
 
-// in text field, use \X to change look, where X is a char representing the look, defined in LOOK_TABLE
-#define LOOK_TABLE                             \
-    LOOK_ENTRY(RESET, '_', SHUAttribute_Reset) \
-    LOOK_ENTRY(BOLD, '?', SHUAttribute_Bold, SHUAttribute_ColorFGRed)
-
-#define LOOK_ENTRY(a, b, ...) LOOK_##a = b,
-typedef enum LOOK_ID
-{
-    LOOK_TABLE
-} LOOK_ID;
-#undef LOOK_ENTRY
-
 typedef struct NPCChoice
 {
-    int requiredFlags;
-    int action;
+    unsigned int requiredFlags;
+    unsigned int action;
     int nextNodeIndex;
     char text[CHOICE_TEXT_SIZE];
 } NPCChoice;
 
 typedef struct NPCNode
 {
+    unsigned int requiredFlags;
     char text[NODE_TEXT_SIZE];
     int choiceCount;
     NPCChoice choices[INPUT_FIELD_SELECTION_COUNT];
@@ -105,7 +95,7 @@ typedef struct Map
 
 typedef struct Player
 {
-    char flags[PLAYER_MAX_FLAGS];
+    unsigned char flags[PLAYER_MAX_FLAGS];
     int x;
     int y;
 } Player;

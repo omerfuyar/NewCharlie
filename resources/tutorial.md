@@ -33,13 +33,19 @@ Defines a dialogue node for the current `NPC`.
 
 ### `CHOICE req:<reqFlagMask> set:<actionCode> goto:<nextNodeIndex> <choiceText>`
 Defines a choice option for the most recently defined `NODE` node. Must be max INPUT_FIELD_SELECTION_COUNT choices per node.
-- `reqFlagMask`: A 32-bit bitmask of player flags required to see this choice. Every flag is 8 bit so it can store `4` flags inside. Put `0` for none.
-- `actionCode`: A 32-bit integer packed with instruction data to execute when chosen. Put `0` for no action.
-  - **Bits 24-31:** Action Type (e.g., 0 = None, 1 = Set Flag, 2 = Teleport, 3 = Edit Map Tile)
-  - **Bits 16-23:** Argument 1 (e.g., Flag ID, Target Map ID, etc.)
-  - **Bits 8-15:** Argument 2 (e.g., X coordinate)
-  - **Bits 0-7:** Argument 3 (e.g., Y coordinate or ASCII char)
-  - *Example:* `0x02030A05` = Action 2 (Teleport) to Map 3, X=10, Y=5.
+- `reqFlagMask`: A 32-bit bitmask of player flags required to see this choice. Every flag is 8 bit so it can store `4` flags inside. Put `0` for none. See actionCode
+- `actionCode`: A 32-bit integer packed with instruction data to execute when chosen. In hexadecimal format. Put `0` for no action.
+  - **Bits `11111111 00000000 00000000 00000000`** Action Type
+  - **Bits `00000000 11111111 00000000 00000000`** Argument 1
+  - **Bits `00000000 00000000 11111111 00000000`** Argument 2
+  - **Bits `00000000 00000000 00000000 11111111`** Argument 3
+  - Action Types:
+    - `0`: No action
+    - `1`: Set Flags - Sets the player flags specified in all 3 arguments to 1.
+    - `2`: Clear Flags - Sets the player flags specified in all 3 arguments to 0.
+    - `3`: Set and Clear Flags - Sets the player flags specified in argument 1 and argument 2 to 1, and sets the player flag specified in argument 3 to 0.
+    - `4`: Toggle Flags - Toggles, switches the player flags specified in all 3 arguments.
+  - Example: `0x03020004` means "Set player flag 2, and clear player flag 4". arg2 is ignored because it is 0.
 - `nextNodeIndex`: The 0-based index of the node to jump to. Put `-1` to end the conversation.
 - `choiceText`: The rest of the line is the option's text.
 

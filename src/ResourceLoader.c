@@ -36,6 +36,8 @@ int loglog(const char *format, ...)
     vfprintf(logFile, format, args);
     va_end(args);
 
+    fprintf(logFile, "\n");
+
     fclose(logFile);
     return 0;
 }
@@ -185,7 +187,10 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
             currentNode = currentNpc->nodes + currentNpc->nodesCount;
             currentNode->choiceCount = 0;
 
-            strncpy(currentNode->text, lineBuffer + 5, NODE_TEXT_SIZE - 1);
+            int charsRead = 0;
+            scanCheck(lineBuffer + 5, 1, "req:%x %n", &currentNode->requiredFlags, &charsRead);
+
+            strncpy(currentNode->text, (lineBuffer + 5) + charsRead, NODE_TEXT_SIZE - 1);
             currentNode->text[NODE_TEXT_SIZE - 1] = '\0';
 
             currentNpc->nodesCount++;
@@ -201,8 +206,7 @@ static int loadMap(const char *file, const Portrait *portraits, int maxPortraits
 
             NPCChoice *currentChoice = currentNode->choices + currentNode->choiceCount;
             int charsRead = 0;
-            scanCheck(lineBuffer + 7, 3, "req:%d set:%d goto:%d %n", &currentChoice->requiredFlags, &currentChoice->action, &currentChoice->nextNodeIndex, &charsRead);
-            //! read rest of the line as text, with protection against overflow
+            scanCheck(lineBuffer + 7, 3, "req:%x set:%x goto:%d %n", &currentChoice->requiredFlags, &currentChoice->action, &currentChoice->nextNodeIndex, &charsRead);
 
             strncpy(currentChoice->text, (lineBuffer + 7) + charsRead, CHOICE_TEXT_SIZE - 1);
             currentChoice->text[CHOICE_TEXT_SIZE - 1] = '\0';

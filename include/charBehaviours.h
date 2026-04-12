@@ -6,9 +6,9 @@
 
 // define how characters will look in the terminal and how will behave if player steps on them
 #define CHAR_TABLE                                                                           \
-    CHAR_ENTRY(BORDER_HORIZONTAL, '-', nullBehaviour, SHUAttribute_ColorFGBlue)              \
-    CHAR_ENTRY(BORDER_VERTICAL, '|', nullBehaviour, SHUAttribute_ColorFGBlue)                \
-    CHAR_ENTRY(PLAYER, '@', nullBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGYellow)    \
+    CHAR_ENTRY(BORDER_HORIZONTAL, '-', floorBehaviour, SHUAttribute_ColorFGBlue)             \
+    CHAR_ENTRY(BORDER_VERTICAL, '|', floorBehaviour, SHUAttribute_ColorFGBlue)               \
+    CHAR_ENTRY(PLAYER, '@', floorBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGYellow)   \
     CHAR_ENTRY(FLOOR, ' ', floorBehaviour, SHUAttribute_ColorBGBlack)                        \
     CHAR_ENTRY(WALL, '#', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)       \
     CHAR_ENTRY(PORTAL, 'O', portalBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGMagenta) \
@@ -22,16 +22,7 @@ typedef enum CHAR_ID
 #undef CHAR_ENTRY
 
 void setAttributesForCharacter(CHAR_ID character);
-void setAttributesForLook(LOOK_ID look);
 int callBehaviourForCharacter(CHAR_ID character, const Map *map, Player *player, MapCharacterData data);
-
-static int nullBehaviour(const Map *map, Player *player, MapCharacterData data)
-{
-    (void)map;
-    (void)player;
-    (void)data;
-    return 0;
-}
 
 static int floorBehaviour(const Map *map, Player *player, MapCharacterData data)
 {
@@ -50,8 +41,6 @@ static int floorBehaviour(const Map *map, Player *player, MapCharacterData data)
     SHU_PutCharacter(CHAR_PLAYER);
     SHU_SetAttributes(SHUAttribute_Reset);
 
-    loglog("floor : player x %d, player y %d\n", player->x, player->y);
-
     return 0;
 }
 
@@ -60,8 +49,6 @@ static int wallBehaviour(const Map *map, Player *player, MapCharacterData data)
     (void)map;
     (void)player;
     (void)data;
-
-    loglog("wall : player x %d, player y %d\n", player->x, player->y);
 
     return 0;
 }
@@ -75,8 +62,6 @@ static int portalBehaviour(const Map *map, Player *player, MapCharacterData data
     const Map *targetMap = &(map - map->index)[data.index];
 
     renderMap(targetMap, &player->x, &player->y);
-
-    loglog("portal : index %d, player x %d, player y %d\n", data.index, player->x, player->y);
 
     return 0;
 }

@@ -38,6 +38,7 @@ int main(const int argc, const char **argv)
     Map maps[MAP_MAX_COUNT] = {0};
     Portrait portraits[PORTRAIT_MAX_COUNT] = {0};
     Player player = {0};
+    player.flags[0] = 0xFF;
 
     int numPortraits = loadPortraits("resources/portraits", portraits, PORTRAIT_MAX_COUNT);
     if (numPortraits == 0)
@@ -61,6 +62,7 @@ int main(const int argc, const char **argv)
     // renderTextField("Lorem ipsum dolor \"\\\\\" '\\?sit amet\\_', consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur.");
 
     renderMap(currentMap, &player.x, &player.y);
+    renderPlayer(currentMap, &player, SHUKey_Invalid);
 
     while (1)
     {

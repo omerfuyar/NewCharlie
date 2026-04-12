@@ -1,6 +1,10 @@
 #include "Renderer.h"
 #include "charBehaviours.h"
+#include "lookBehaviours.h"
 #include <string.h>
+#include <stddef.h>
+
+#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 
 void setAttributesForCharacter(CHAR_ID character)
 {
@@ -32,14 +36,49 @@ int callBehaviourForCharacter(CHAR_ID character, const Map *map, Player *player,
 {
     switch (character)
     {
-#define CHAR_ENTRY(a, b, c, ...) \
-    case CHAR_##a:               \
+#define CHAR_ENTRY(a, b, c, ...)                                                                 \
+    case CHAR_##a:                                                                               \
+        loglog("character : '%c', playerX : %d, playerY : %d", character, player->x, player->y); \
         return c(map, player, data);
         CHAR_TABLE
 #undef CHAR_ENTRY
+    default:
+        loglog("No behaviour defined for character '%c'", character);
+        return floorBehaviour(map, player, data);
     }
 
     return 0;
+}
+
+static void putStringStyled(const char *string, int strLen, int x, int y)
+{
+    SHU_SetCursorPosition(x, y);
+
+    for (int i = 0; i < strLen; i++)
+    {
+        char character = string[i];
+
+        if (character == '\\')
+        {
+            char nextCharacter = (i + 1 < strLen) ? string[i + 1] : LOOK_RESET;
+
+            if (nextCharacter == '\\')
+            {
+                i++;
+                goto putChar;
+            }
+            else
+            {
+                setAttributesForLook(nextCharacter);
+                i++;
+            }
+        }
+        else
+        {
+        putChar:
+            SHU_PutCharacter(character);
+        }
+    }
 }
 
 // for once in program
@@ -123,35 +162,19 @@ void clearTextField(void)
 // on new text, TEXT_FIELD_MAX_WIDTH x MAP_MAX_HEIGHT limit
 void renderTextField(const char *text)
 {
+    clearTextField();
+
     int textLength = (int)strlen(text);
-    int cursorIndex = 0;
+    int textIndex = 0;
 
-    for (int i = 0; i < textLength; i++)
+    while (textIndex < textLength)
     {
-        char character = text[i];
+        putStringStyled(text + textIndex,
+                        TEXT_FIELD_MAX_WIDTH,
+                        TEXT_FIELD_START_X,
+                        TEXT_FIELD_START_Y + (textIndex / TEXT_FIELD_MAX_WIDTH));
 
-        if (character == '\\')
-        {
-            char nextCharacter = (i + 1 < textLength) ? text[i + 1] : LOOK_RESET;
-
-            if (nextCharacter == '\\')
-            {
-                i++;
-                goto putChar;
-            }
-            else
-            {
-                setAttributesForLook(nextCharacter);
-                i++;
-            }
-        }
-        else
-        {
-        putChar:
-            SHU_SetCursorPosition(TEXT_FIELD_START_X + (cursorIndex % TEXT_FIELD_MAX_WIDTH), TEXT_FIELD_START_Y + (cursorIndex / TEXT_FIELD_MAX_WIDTH));
-            SHU_PutCharacter(character);
-            cursorIndex++;
-        }
+        textIndex += TEXT_FIELD_MAX_WIDTH;
     }
 }
 
@@ -177,30 +200,46 @@ void clearInputField(void)
 int renderInputField(const char *selection1, const char *selection2, const char *selection3, const char *selection4)
 {
     clearInputField();
+    char textBuffer[INPUT_FILED_MAX_TEXT] = {0};
 
-    // todo wrap
     if (selection1 != NULL)
     {
-        SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(1));
-        SHU_PutString("> 1: %.*s", INPUT_FIELD_MAX_WIDTH, selection1);
+        int strLen = snprintf(textBuffer, sizeof(textBuffer), "> 1: %.*s", (int)sizeof(textBuffer) - 5, selection1);
+        putStringStyled(textBuffer, MIN(strLen, INPUT_FIELD_MAX_WIDTH), INPUT_FIELD_START_X, INPUT_FIELD_START_Y(1));
+        if (strLen > INPUT_FIELD_MAX_WIDTH)
+        {
+            putStringStyled(textBuffer + INPUT_FIELD_MAX_WIDTH, strLen - INPUT_FIELD_MAX_WIDTH, INPUT_FIELD_START_X, INPUT_FIELD_START_Y(1) + 1);
+        }
     }
 
     if (selection2 != NULL)
     {
-        SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(2));
-        SHU_PutString("> 2: %.*s", INPUT_FIELD_MAX_WIDTH, selection2);
+        int strLen = snprintf(textBuffer, sizeof(textBuffer), "> 2: %.*s", (int)sizeof(textBuffer) - 5, selection2);
+        putStringStyled(textBuffer, MIN(strLen, INPUT_FIELD_MAX_WIDTH), INPUT_FIELD_START_X, INPUT_FIELD_START_Y(2));
+        if (strLen > INPUT_FIELD_MAX_WIDTH)
+        {
+            putStringStyled(textBuffer + INPUT_FIELD_MAX_WIDTH, strLen - INPUT_FIELD_MAX_WIDTH, INPUT_FIELD_START_X, INPUT_FIELD_START_Y(2) + 1);
+        }
     }
 
     if (selection3 != NULL)
     {
-        SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(3));
-        SHU_PutString("> 3: %.*s", INPUT_FIELD_MAX_WIDTH, selection3);
+        int strLen = snprintf(textBuffer, sizeof(textBuffer), "> 3: %.*s", (int)sizeof(textBuffer) - 5, selection3);
+        putStringStyled(textBuffer, MIN(strLen, INPUT_FIELD_MAX_WIDTH), INPUT_FIELD_START_X, INPUT_FIELD_START_Y(3));
+        if (strLen > INPUT_FIELD_MAX_WIDTH)
+        {
+            putStringStyled(textBuffer + INPUT_FIELD_MAX_WIDTH, strLen - INPUT_FIELD_MAX_WIDTH, INPUT_FIELD_START_X, INPUT_FIELD_START_Y(3) + 1);
+        }
     }
 
     if (selection4 != NULL)
     {
-        SHU_SetCursorPosition(INPUT_FIELD_START_X, INPUT_FIELD_START_Y(4));
-        SHU_PutString("> 4: %.*s", INPUT_FIELD_MAX_WIDTH, selection4);
+        int strLen = snprintf(textBuffer, sizeof(textBuffer), "> 4: %.*s", (int)sizeof(textBuffer) - 5, selection4);
+        putStringStyled(textBuffer, MIN(strLen, INPUT_FIELD_MAX_WIDTH), INPUT_FIELD_START_X, INPUT_FIELD_START_Y(4));
+        if (strLen > INPUT_FIELD_MAX_WIDTH)
+        {
+            putStringStyled(textBuffer + INPUT_FIELD_MAX_WIDTH, strLen - INPUT_FIELD_MAX_WIDTH, INPUT_FIELD_START_X, INPUT_FIELD_START_Y(4) + 1);
+        }
     }
 
     while (1)
@@ -209,23 +248,23 @@ int renderInputField(const char *selection1, const char *selection2, const char 
 
         if (key == SHUKey_1 && selection1 != NULL)
         {
-            return 1;
+            return 0;
         }
         else if (key == SHUKey_2 && selection2 != NULL)
         {
-            return 2;
+            return 1;
         }
         else if (key == SHUKey_3 && selection3 != NULL)
         {
-            return 3;
+            return 2;
         }
         else if (key == SHUKey_4 && selection4 != NULL)
         {
-            return 4;
+            return 3;
         }
     }
 
-    return 0;
+    return -1;
 }
 
 // on new map, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
@@ -245,14 +284,15 @@ void renderMap(const Map *map, int *playerX, int *playerY)
         }
     }
 
-    *playerX = map->playerStartX;
-    *playerY = map->playerStartY;
+    if (playerX != NULL)
+    {
+        *playerX = map->playerStartX;
+    }
 
-    SHU_SetCursorPosition(*playerX + 1, *playerY + 1);
-
-    setAttributesForCharacter(CHAR_PLAYER);
-    SHU_PutCharacter(CHAR_PLAYER);
-    SHU_SetAttributes(SHUAttribute_Reset);
+    if (playerY != NULL)
+    {
+        *playerY = map->playerStartY;
+    }
 }
 
 // on new interaction, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
@@ -281,7 +321,7 @@ int renderPlayer(const Map *map, Player *player, SHUKey key)
 
     if (newX < 0 || newX >= MAP_MAX_WIDTH || newY < 0 || newY >= MAP_MAX_HEIGHT || (player->x == newX && player->y == newY))
     {
-        return 0;
+        goto renderPlayer;
     }
 
     MapCharacterData data = {0};
@@ -293,7 +333,7 @@ int renderPlayer(const Map *map, Player *player, SHUKey key)
             data.index = map->portals[i].targetMapIndex;
             data.x = newX;
             data.y = newY;
-            goto skipPos;
+            goto callBehaviour;
         }
 
         if (map->npcs[i].x == newX && map->npcs[i].y == newY)
@@ -301,7 +341,7 @@ int renderPlayer(const Map *map, Player *player, SHUKey key)
             data.index = map->npcs[i].index;
             data.x = newX;
             data.y = newY;
-            goto skipPos;
+            goto callBehaviour;
         }
     }
 
@@ -309,13 +349,15 @@ int renderPlayer(const Map *map, Player *player, SHUKey key)
     data.x = newX;
     data.y = newY;
 
-skipPos:
+callBehaviour:
 
     int result = callBehaviourForCharacter(map->data[newY][newX], map, player, data);
     if (result != 0)
     {
         return result;
     }
+
+renderPlayer:
 
     SHU_SetCursorPosition(player->x + 1, player->y + 1);
 
