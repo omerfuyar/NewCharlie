@@ -22,14 +22,14 @@ typedef enum CHAR_ID
 #undef CHAR_ENTRY
 
 void setAttributesForCharacter(CHAR_ID character);
-int callBehaviourForCharacter(CHAR_ID character, const Map *map, Player *player, MapCharacterData data);
+int callBehaviourForCharacter(CHAR_ID character, Player *player, MapCharacterData data);
 
-static int floorBehaviour(const Map *map, Player *player, MapCharacterData data)
+static int floorBehaviour(Player *player, MapCharacterData data)
 {
     SHU_SetCursorPosition(player->x + 1, player->y + 1);
 
-    setAttributesForCharacter((CHAR_ID)(map->data[player->y][player->x]));
-    SHU_PutCharacter(map->data[player->y][player->x]);
+    setAttributesForCharacter((CHAR_ID)(player->currentMap->data[player->y][player->x]));
+    SHU_PutCharacter(player->currentMap->data[player->y][player->x]);
 
     player->x = data.x;
     player->y = data.y;
@@ -44,33 +44,29 @@ static int floorBehaviour(const Map *map, Player *player, MapCharacterData data)
     return 0;
 }
 
-static int wallBehaviour(const Map *map, Player *player, MapCharacterData data)
+static int wallBehaviour(Player *player, MapCharacterData data)
 {
-    (void)map;
     (void)player;
     (void)data;
 
     return 0;
 }
 
-static int portalBehaviour(const Map *map, Player *player, MapCharacterData data)
+static int portalBehaviour(Player *player, MapCharacterData data)
 { // data : index is the target map index
-    (void)map;
     (void)player;
     (void)data;
 
-    const Map *targetMap = &(map - map->index)[data.index];
-
-    renderMap(targetMap, &player->x, &player->y);
+    player->currentMap = &(player->currentMap - player->currentMap->index)[data.index];
+    renderMap(player->currentMap, &player->x, &player->y);
 
     return 0;
 }
 
-static int npcBehaviour(const Map *map, Player *player, MapCharacterData data)
+static int npcBehaviour(Player *player, MapCharacterData data)
 { // data : index is the npc index in the map
-    const NPC *npc = map->npcs + data.index;
-
-    startDialogue(map, npc, player);
+    const NPC *npc = player->currentMap->npcs + data.index;
+    startDialogue(player, npc);
 
     return 0;
 }

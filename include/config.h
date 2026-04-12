@@ -4,8 +4,8 @@
 
 #define FILE_NAME_MAX_SIZE 256
 #define MAP_LINE_MAX_SIZE 512
-#define NODE_TEXT_SIZE 256
-#define CHOICE_TEXT_SIZE 128
+#define NODE_TEXT_SIZE 512
+#define CHOICE_TEXT_SIZE 256
 
 #define PLAYER_MAX_FLAGS 32
 
@@ -95,6 +95,7 @@ typedef struct Map
 
 typedef struct Player
 {
+    const Map *currentMap;
     unsigned char flags[PLAYER_MAX_FLAGS];
     int x;
     int y;

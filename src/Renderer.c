@@ -32,19 +32,19 @@ void setAttributesForLook(LOOK_ID look)
     }
 }
 
-int callBehaviourForCharacter(CHAR_ID character, const Map *map, Player *player, MapCharacterData data)
+int callBehaviourForCharacter(CHAR_ID character, Player *player, MapCharacterData data)
 {
     switch (character)
     {
 #define CHAR_ENTRY(a, b, c, ...)                                                                 \
     case CHAR_##a:                                                                               \
         loglog("character : '%c', playerX : %d, playerY : %d", character, player->x, player->y); \
-        return c(map, player, data);
+        return c(player, data);
         CHAR_TABLE
 #undef CHAR_ENTRY
     default:
         loglog("No behaviour defined for character '%c'", character);
-        return floorBehaviour(map, player, data);
+        return floorBehaviour(player, data);
     }
 
     return 0;
@@ -314,7 +314,7 @@ void renderPortrait(const Portrait *portrait)
 }
 
 // on player move, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
-int renderPlayer(const Map *map, Player *player, SHUKey key)
+int renderPlayer(Player *player, SHUKey key)
 {
     int newX = player->x + (key == SHUKey_ArrowRight) - (key == SHUKey_ArrowLeft);
     int newY = player->y + (key == SHUKey_ArrowDown) - (key == SHUKey_ArrowUp);
@@ -328,17 +328,17 @@ int renderPlayer(const Map *map, Player *player, SHUKey key)
 
     for (int i = 0; i < MAP_INTERACTABLE_MAX_COUNT; i++)
     {
-        if (map->portals[i].x == newX && map->portals[i].y == newY)
+        if (player->currentMap->portals[i].x == newX && player->currentMap->portals[i].y == newY)
         {
-            data.index = map->portals[i].targetMapIndex;
+            data.index = player->currentMap->portals[i].targetMapIndex;
             data.x = newX;
             data.y = newY;
             goto callBehaviour;
         }
 
-        if (map->npcs[i].x == newX && map->npcs[i].y == newY)
+        if (player->currentMap->npcs[i].x == newX && player->currentMap->npcs[i].y == newY)
         {
-            data.index = map->npcs[i].index;
+            data.index = player->currentMap->npcs[i].index;
             data.x = newX;
             data.y = newY;
             goto callBehaviour;
@@ -351,7 +351,7 @@ int renderPlayer(const Map *map, Player *player, SHUKey key)
 
 callBehaviour:
 
-    int result = callBehaviourForCharacter(map->data[newY][newX], map, player, data);
+    int result = callBehaviourForCharacter(player->currentMap->data[newY][newX], player, data);
     if (result != 0)
     {
         return result;

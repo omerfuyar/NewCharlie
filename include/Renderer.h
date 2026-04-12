@@ -22,4 +22,4 @@ void clearInputField(void);
 int renderInputField(const char *selection1, const char *selection2, const char *selection3, const char *selection4);
 
 // on player move, fixed size, MAP_MAX_WIDTH x MAP_MAX_HEIGHT limit
-int renderPlayer(const Map *map, Player *player, SHUKey key);
+int renderPlayer(Player *player, SHUKey key);

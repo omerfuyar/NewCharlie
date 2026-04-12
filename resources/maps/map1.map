@@ -1,6 +1,48 @@
-MAP_ID 0
-PORTALS 
-NPCS 
+MAP_ID 1
+PORTALS 0
+NPCS 0,1,2
+
+# Orber
+NPC 0 PORTRAIT -1
+
+NODE req:0x01000000 Did you do it yet? you should talk to all of my friends, they should know you're coming to help.
+CHOICE req:0 set:0 goto:-1 I am on it.
+
+NODE req:0 H-hello human! We haven't had anyone here in what feels like decades, im sorry that i welcome you in this state, i cannot afford to move, even speaking is risky, but we need your help so this is worth it, we ah, hmmm.... well we are running out of power and can't afford to move to waste power, and our generator is broken, it used to power us and the whole city, our knowledge is limited and we dont have enoug energy left to move to even try, would you help us?
+CHOICE req:0 set:0 goto:2 Hell no! This whole place is creeping me out and i dont trust you! Im getting out of here.
+CHOICE req:0 set:0x01010000 goto:3 The state of this place seems to make your story convincing, sure, what do you need from me?
+
+NODE req:0 You escaped the mysterious robot town, never wishing to see it ever again. But your curiosity as an adventurer has ate you up ever since and you decide to return to these caves to explore this mysterious robot society once again.
+CHOICE req:0 set:0 goto:-1 Return.
+
+NODE req:0x01000000 Thank you! We are so grateful, just talk to three of my friends, they all have a task each for you, they know better what to do
+CHOICE req:0 set:0 goto:-1 I will.
+
+#Wrench-head
+NPC 1 PORTRAIT -1
+
+NODE req:0 Hello, wrench-head is happy to meet our new friend, wrench-head asks our new friend for help, because even if wrench-head knows about wrenches, wrench-head doesn't really understand nuclear fission... Wrench-head would like our new friend to get the uranium...
+CHOICE req:0 set:0 goto:-1 I don't think i really want to handle uranium at the moment i'm sorry.
+CHOICE req:0 set:0x01020000 goto:1 I always did want to build a nuclear reactor of my own! Give me that suit.
+
+NODE req:1 The door opens...
+CHOICE req:0 set:0 goto:-1 Thanks.
+
+NODE req:0x02000000 Wrench-head proud of friend! Uranium provide much calories, whoops i mean energy.
+CHOICE req:0 set:0 goto:-1 You're welcome.
+
+#Brittle-bolt
+NPC 2 PORTRAIT -1
+
+NODE req:0 H-llo, I eed wire, mu-chch wire. COULD, ge-t wire?
+CHOICE req:0 set:0 goto:-1 Uhhhh, i'm sorry buddy, I think im just gonna talk to the others first...
+CHOICE req:0 set:0x01030000 goto:1 Sure thing fella, don't exactly know what much is but i'll grab a bunch?
+
+NODE req:1f The door opens...
+CHOICE req:0 set:0 goto:-1 Thanks.
+
+NODE req:0x03000000 H-llo, I eed wire, mu-chch wire. COULD, ge-t wire?
+CHOICE req:0 set:0 goto:-1 I am on it.
 
 GRID
            . .      ..#-#%%.........%%%%#=*  ..           .  .  
@@ -17,9 +59,9 @@ GRID
 ...#     .  .                +#===#:               . .        #%
 ######                  .   .=#  .#::     .                  ##%
 .....-###            #########*   #:#: .      ..         .  ||#.
-######=+O @     .      .   .   $$$ . ||   .                 +...
-......###          .  %#%#.    $$$  ||:          .          0...
-%+###*                   %#%##:   .####+  .      .          +...
+######=+O @     .      . I .   $$$ . ||   .                 +...
+......###        I .  %#%#.    $$$  ||:          .          0...
+%+###*             I     %#%##:   .####+  .      .          +...
 ...#         . .   .         #: .%.                         ||..
 ..# .               .        #===#-               ..         ##%
 ###      .      . .    .     #   #-                    .      #%

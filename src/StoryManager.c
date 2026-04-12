@@ -119,7 +119,7 @@ static int dialogueShowNode(Player *player, const NPCNode *node)
     return node->choices[choice].nextNodeIndex;
 }
 
-int startDialogue(const Map *map, const NPC *npc, Player *player)
+int startDialogue(Player *player, const NPC *npc)
 {
     if (npc->portrait != NULL)
     {
@@ -147,8 +147,8 @@ int startDialogue(const Map *map, const NPC *npc, Player *player)
     clearInputField();
     clearTextField();
 
-    renderMap(map, NULL, NULL);
-    renderPlayer(map, player, SHUKey_Invalid);
+    renderMap(player->currentMap, NULL, NULL);
+    renderPlayer(player, SHUKey_Invalid);
 
     return 0;
 }
