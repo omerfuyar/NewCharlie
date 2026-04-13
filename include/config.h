@@ -95,7 +95,7 @@ typedef struct Map
 
 typedef struct Player
 {
-    const Map *currentMap;
+    Map *currentMap;
     unsigned char flags[PLAYER_MAX_FLAGS];
     int x;
     int y;

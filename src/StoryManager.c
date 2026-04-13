@@ -1,6 +1,7 @@
 #include "StoryManager.h"
 #include "Renderer.h"
 #include <stddef.h>
+#include <stdlib.h>
 
 static int playerCheckRequirements(const Player *player, unsigned int requirements)
 {
@@ -78,7 +79,7 @@ static int choiceExecuteAction(Player *player, unsigned int action)
             player->flags[arg2] = 1;
         if (arg3 > 0 && arg3 < PLAYER_MAX_FLAGS)
             player->flags[arg3] = 0;
-        loglog("Set player flag %d to %d and clear player flag %d", arg1, arg2, arg3);
+        loglog("Set player flag %d & %d and clear player flag %d", arg1, arg2, arg3);
         break;
 
     case 4: // Toggle Flags
@@ -89,6 +90,44 @@ static int choiceExecuteAction(Player *player, unsigned int action)
         if (arg3 > 0 && arg3 < PLAYER_MAX_FLAGS)
             player->flags[arg3] = !player->flags[arg3];
         loglog("Toggle player flag %d, %d and %d", arg1, arg2, arg3);
+        break;
+
+    case 5: // Exit Game
+        loglog("Exit game");
+        exit(0);
+        break;
+
+    case 6: // Move Player
+        if (arg1 < MAP_MAX_WIDTH && arg2 < MAP_MAX_HEIGHT)
+        {
+            player->x = arg1;
+            player->y = arg2;
+            loglog("Move player to (%d, %d)", arg1, arg2);
+        }
+        break;
+
+    case 7: // Edit Map
+        if (arg1 < MAP_MAX_WIDTH && arg2 < MAP_MAX_HEIGHT)
+        {
+            player->currentMap->data[arg2][arg1] = (char)arg3;
+            loglog("Changed map tile at (%d, %d) to '%c'", arg1, arg2, arg3);
+        }
+        break;
+
+    case 8: // Load Map
+        if (arg1 < MAP_MAX_COUNT)
+        {
+            player->currentMap = &(player->currentMap - player->currentMap->index)[arg1];
+
+            renderMap(player->currentMap, &player->x, &player->y);
+
+            if (arg2 > 0 && arg2 < PLAYER_MAX_FLAGS)
+                player->flags[arg2] = 1;
+            if (arg3 > 0 && arg3 < PLAYER_MAX_FLAGS)
+                player->flags[arg3] = 1;
+
+            loglog("Load map %d and Set player flag %d & %d", arg1, arg2, arg3);
+        }
         break;
 
     default:

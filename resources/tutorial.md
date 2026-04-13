@@ -45,6 +45,10 @@ Defines a choice option for the most recently defined `NODE` node. Must be max I
     - `2`: Clear Flags - Sets the player flags specified in all 3 arguments to 0.
     - `3`: Set and Clear Flags - Sets the player flags specified in argument 1 and argument 2 to 1, and sets the player flag specified in argument 3 to 0.
     - `4`: Toggle Flags - Toggles, switches the player flags specified in all 3 arguments.
+    - `5`: Exit Game - Ends the game immediately.
+    - `6`: Move Player - Moves the player to the coordinates specified in argument 1 (x) and argument 2 (y). Argument 3 is ignored.
+    - `7`: Edit Map - Changes the map tile at the coordinates specified in argument 1 (x) and argument 2 (y) to the character specified in argument 3. Argument 3 is interpreted as a char, so for example `0x00000041` would change the tile to 'A'.
+    - `8`: Load Map - Loads the map specified in argument 1. Arguments 2 and 3 are ignored.
   - Example: `0x03020004` means "Set player flag 2, and clear player flag 4". arg2 is ignored because it is 0.
 - `nextNodeIndex`: The 0-based index of the node to jump to. Put `-1` to end the conversation.
 - `choiceText`: The rest of the line is the option's text.

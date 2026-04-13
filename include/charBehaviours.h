@@ -6,11 +6,13 @@
 
 // define how characters will look in the terminal and how will behave if player steps on them
 #define CHAR_TABLE                                                                           \
-    CHAR_ENTRY(BORDER_HORIZONTAL, '-', floorBehaviour, SHUAttribute_ColorFGBlue)             \
-    CHAR_ENTRY(BORDER_VERTICAL, '|', floorBehaviour, SHUAttribute_ColorFGBlue)               \
+    CHAR_ENTRY(BORDER_HORIZONTAL, '-', wallBehaviour, SHUAttribute_ColorFGBlue)              \
+    CHAR_ENTRY(BORDER_VERTICAL, '|', wallBehaviour, SHUAttribute_ColorFGBlue)                \
     CHAR_ENTRY(PLAYER, '@', floorBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGYellow)   \
     CHAR_ENTRY(FLOOR, ' ', floorBehaviour, SHUAttribute_ColorBGBlack)                        \
-    CHAR_ENTRY(WALL, '#', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)       \
+    CHAR_ENTRY(WALL1, '#', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)      \
+    CHAR_ENTRY(WALL2, '=', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)      \
+    CHAR_ENTRY(DOOR, '&', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)       \
     CHAR_ENTRY(PORTAL, 'O', portalBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGMagenta) \
     CHAR_ENTRY(NPC, 'I', npcBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGCyan)
 
