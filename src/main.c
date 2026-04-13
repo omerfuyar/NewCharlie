@@ -2,12 +2,14 @@
 #include "ResourceLoader.h"
 #include "StoryManager.h"
 #include <signal.h>
+#include <stdlib.h>
+#include <time.h>
 
 void handleSignal(int signal)
 {
-    (void)signal;
     SHU_ClearTerminal();
     SHU_Terminate();
+    loglog("!!! Received signal %d !!!\n", signal);
 }
 
 int main(const int argc, const char **argv)

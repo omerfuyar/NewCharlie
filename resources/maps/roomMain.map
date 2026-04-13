@@ -1,0 +1,192 @@
+MAP_ID 1
+PORTALS 2,0,3,4
+NPCS 1,0,2,3
+
+#flag 1: main quest taken
+#flag 2: uranium quest taken
+#flag 3: wire quest taken
+#flag 4: last quest taken
+#flag 5: uranium found
+#flag 6: wire found
+#flag 7: last found
+#flag 8: uranium quest completed
+#flag 9: wire quest completed
+#flag 10: last quest completed
+
+# Orber##########################################################################
+NPC 1 PORTRAIT -1
+
+#0
+NODE req:0 \*The little, sphere-shaped robot twitches to life and starts speaking. It doesn't seem to want to move despite having the capability to do so.\_
+CHOICE req:0 set:0 goto:1 \*<Talk>\_
+CHOICE req:0 set:0 goto:-1 \*<Walk away>\_
+
+#1
+NODE req:1F \RH-hello human! We haven't had anyone here in what feels like decades. I'm sorry that I welcome you in this state, I cannot afford to move; \!even speaking is risky.\_ \RBut we need your help, so this is worth it. We ah, hmmm.... well, we are running out of power and can't afford to waste any. \!And our generator is broken.\_ \RIt used to power us and the whole city! Our knowledge is limited and we don't have enough energy left to even try moving. Would you help us?\_
+CHOICE req:0 set:0 goto:2 \!Hell no!\_ This whole place is creeping me out and I don't trust you! I'm getting out of here.
+CHOICE req:0 set:0 goto:3 The state of this place seems to make your story convincing. Sure, what do you need from me?
+
+#2
+NODE req:1F \*You escaped the \?mysterious robot town\_, \*never wishing to see it ever again. But your curiosity as an adventurer has eaten you up ever since, and you decide to return to these caves to explore this \?mysterious robot society\_ \*once again.\_
+CHOICE req:0 set:0x05000000 goto:-1 \*<Leave>\_
+#exit game
+
+#3
+NODE req:1F \RThank you! We are so grateful! Just talk to three of my friends. They all have a task each for you, they know better what to do.\_
+CHOICE req:0 set:0x01010000 goto:-1 Ok, I will...
+#flag 1: main quest taken
+
+#4
+NODE req:0x01000000 \RDid you do it yet? You should talk to all of my friends, they should know you're coming to help.\_
+CHOICE req:0 set:0 goto:-1 I will do so.
+CHOICE req:0x0108090A set:0x08030000 goto:5 I'm here, I got all these parts you needed.
+#all quests completed, load map 3
+
+#Wrench-head##########################################################################
+NPC 0 PORTRAIT -1
+
+#0
+NODE req:0 \RWrench-head doesn't know you. Wrench-head is afraid of non-friends. Wrench-head wants you to introduce yourself to Sphere-head!!\_ \!He is in the middle.\_
+CHOICE req:0 set:0 goto:-1 Hmm...
+
+#1, main quest taken
+NODE req:0x01000000 \*A big guy with a wrench-shaped head.\_
+CHOICE req:0 set:0 goto:2 \*<Talk>\_
+CHOICE req:0 set:0 goto:-1 \*<Walk away>\_
+
+#2
+NODE req:1F \RHello, Wrench-head is happy to meet our new friend! Wrench-head asks our new friend for help, because even though Wrench-head knows about wrenches, Wrench-head doesn't really understand nuclear fission, or how to power nuclear reactors with \!uranium\_\R. But Wrench-head has a hazmat suit for you! The \!uranium\_\R is inside the room forward. Wrench-head would like our new friend to get the \!uranium\_\R and bring it to the reactor together with the other parts.\_
+CHOICE req:0 set:0 goto:-1 I don't think I really want to handle uranium at the moment, I'm sorry.
+CHOICE req:0 set:0x01020000 goto:3 \!I always did want to build a nuclear reactor of my own!\_ Give me that suit.
+#flag 2: uranium quest taken
+
+#3
+NODE req:1F \*The gate in front of you opens.\_
+CHOICE req:0 set:0x071F0120 goto:-1 \*<Continue>\_
+#open uranium door
+
+#4, uranium quest taken
+NODE req:0x02000000 \RWrench-head still waits for you to bring his \!uranium\_\R.\_
+CHOICE req:0 set:0 goto:-1 I am on it.
+CHOICE req:0x05000000 set:0 goto:5 Here, I have your uranium. \*<Give uranium>\_
+#uranium found
+
+#5
+NODE req:0x1F \RWrench-head proud of friend! \!Uranium\_\R provide much calories... whoops, I mean energy.\_
+CHOICE req:0 set:0x01080000 goto:-1 Ummm, ok?..
+#flag 8: uranium quest completed
+
+#6, uranium quest completed
+NODE req:0x08000000 \RWrench-head is very happy that you were able to get the \!uranium\_\R, but Wrench-head expects you to continue helping his friends with their tasks.\_
+CHOICE req:0 set:0 goto:-1 \*<Continue>\_
+
+#Brittle-bolt##########################################################################
+NPC 2 PORTRAIT -1
+
+#0
+NODE req:0 \RH-llo, wh-r YOU? TALGHHK s-s-s-sph-ERE.\_
+CHOICE req:0 set:0 goto:-1 Hmm...
+
+#1, main quest taken
+NODE req:0x01000000 \*A tiny little robot that seems to have its speech speakers broken.\_
+CHOICE req:0 set:0 goto:2 \*<Talk>\_
+CHOICE req:0 set:0 goto:-1 \*<Walk away>\_
+
+#2
+NODE req:0x1F \RH-llo, I eed \!wire\_\R, mu-chch \!wire\_\R. COULD... ge-t wire?\_
+CHOICE req:0 set:0 goto:-1 Uhhhh, I'm sorry buddy, I think I have more prior tasks than you...
+CHOICE req:0 set:0x01030000 goto:3 Sure thing fella. I don't exactly know what "much" is, but I'll grab a bunch.
+#flag 3: wire quest taken
+
+#3
+NODE req:0x1F \*The gate in front of you opens.\_
+CHOICE req:0 set:0x073C0F20 goto:-1 \*<Continue>\_
+#open wire door
+
+#4, wire quest taken
+NODE req:0x03000000 \RWree... wiiiiiRe... \!WIREE...\_
+CHOICE req:0 set:0 goto:-1 I am on it.
+CHOICE req:0x06000000 set:0 goto:5 Here is your wire, poor robot. \*<Give wire>\_
+#wire found
+
+#5
+NODE req:0x1F \R**ohhhh blip blop** We hold your contributions in the highest regard and are profoundly grateful for your commendable efforts. My colleagues and I are fully prepared to furnish all requisite materials and accolades in recognition of your invaluable assistance. For the present moment, please proceed with your esteemed tasks.\_
+CHOICE req:0 set:0x01090000 goto:-1 Wow. Well, you are welcome.
+#flag 9: wire quest completed
+
+#6, wire quest completed
+NODE req:0x09000000 \RNow I am able to talk properly again thanks to your help, and I am very grateful for it. But it seems like you are obligated to proceed with your esteemed tasks.\_
+CHOICE req:0 set:0 goto:-1 \*<Continue>\_
+
+#last npc##########################################################################
+
+NPC 3 PORTRAIT -1
+
+#0
+NODE req:0 
+CHOICE req:0 set:0 goto:-1 Hmm...
+
+#1, main quest taken
+NODE req:0x01000000 
+CHOICE req:0 set:0 goto:2 <Talk>
+CHOICE req:0 set:0 goto:-1 <Walk away>
+
+#2
+NODE req:1F 
+CHOICE req:0 set:0 goto:-1 
+CHOICE req:0 set:0x01040000 goto:3 
+#flag 4: last quest taken
+
+#3
+NODE req:1F The gate in front of you opens.
+CHOICE req:0 set:0x071E1D20 goto:-1 <Continue>
+#open last door
+
+#4, last quest taken
+NODE req:0x04000000 
+CHOICE req:0 set:0 goto:-1 I am on it.
+CHOICE req:0x07000000 set:0 goto:5  <Give >
+#last found
+
+#5
+NODE req:0x1F 
+CHOICE req:0 set:0x01080000 goto:-1 
+#flag 10: last quest completed
+
+#6, last quest completed
+NODE req:0x0A000000 
+CHOICE req:0 set:0 goto:-1 <Continue>
+
+GRID
+           . .      ..#-#%%....O....%%%%#=*  ..           .  .  
+.      .                #####=+&+=######      .            .  ..
+ .   .                             I               .           .
+ .                                        .           .        .
+            .                        .                        . 
+              .  .            . .                  .       .   .
+   .   .                         .              .    .         %
+         . . .     .      .                                   ##
+ .              .       .                                    -#%
+.  .  .        . .        .       .            .             :+%
+###                     .    =.   #       .  .    .           #%
+...#        .                +#===#:               . .        #%
+######                  .   .=#  .#::     .                  ##%
+.....-###            #########*   #:#: .      ..            ||#.
+######=+O @            .   .   $$$ . ||   .                 +...
+......###          I  %#%#.    $$$  ||:          .          &O..
+%+###*                   %#%##:   .####+  .      .       I  +...
+...#         . .   .         #: .%.                         ||..
+..#                 .        #===#-               ..         ##%
+###      .      . .    .     #   #-                    .      #%
+       .  ...   .            #  .#-        .      .           ##
+  .       .  .         ..           .     .          .  .      #
+    .                                           .        .      
+                    . ..                   .        .        .  
+.     .         . .    .   . .  .      .                        
+    .  ..   .        .  .   .                   .               
+ . .   .   .     .   .                  .                   .   
+           .                              .  .                  
+   .       .             I                                  .   
+   .    .                .#=-+&+-=##                            
+.    .  .          . ######%..O...%%######        .             
+    .. .       ####%%%%%%..............%%###       .      .     

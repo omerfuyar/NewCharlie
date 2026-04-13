@@ -40,9 +40,13 @@ static int playerCheckRequirements(const Player *player, unsigned int requiremen
 
 static int choiceExecuteAction(Player *player, unsigned int action)
 {
-    if (action == 0)
+    if (action == PLAYER_REQUIREMENT_NONE)
     {
         return 0;
+    }
+    else if (action == PLAYER_REQUIREMENT_IMPOSSIBLE)
+    {
+        return 1;
     }
 
     unsigned char act = (unsigned char)((action >> 24) & 0xFF);
@@ -53,41 +57,41 @@ static int choiceExecuteAction(Player *player, unsigned int action)
     switch (act)
     {
     case 1: // Set Flags
-        if (arg1 > 0 && arg1 < PLAYER_MAX_FLAGS)
+        if (arg1 > PLAYER_REQUIREMENT_NONE && arg1 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg1] = 1;
-        if (arg2 > 0 && arg2 < PLAYER_MAX_FLAGS)
+        if (arg2 > PLAYER_REQUIREMENT_NONE && arg2 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg2] = 1;
-        if (arg3 > 0 && arg3 < PLAYER_MAX_FLAGS)
+        if (arg3 > PLAYER_REQUIREMENT_NONE && arg3 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg3] = 1;
         loglog("Set player flag %d, %d and %d", arg1, arg2, arg3);
         break;
 
     case 2: // Clear Flags
-        if (arg1 > 0 && arg1 < PLAYER_MAX_FLAGS)
+        if (arg1 > PLAYER_REQUIREMENT_NONE && arg1 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg1] = 0;
-        if (arg2 > 0 && arg2 < PLAYER_MAX_FLAGS)
+        if (arg2 > PLAYER_REQUIREMENT_NONE && arg2 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg2] = 0;
-        if (arg3 > 0 && arg3 < PLAYER_MAX_FLAGS)
+        if (arg3 > PLAYER_REQUIREMENT_NONE && arg3 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg3] = 0;
         loglog("Clear player flag %d, %d and %d", arg1, arg2, arg3);
         break;
 
     case 3: // Set and Clear Flags
-        if (arg1 > 0 && arg1 < PLAYER_MAX_FLAGS)
+        if (arg1 > PLAYER_REQUIREMENT_NONE && arg1 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg1] = 1;
-        if (arg2 > 0 && arg2 < PLAYER_MAX_FLAGS)
+        if (arg2 > PLAYER_REQUIREMENT_NONE && arg2 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg2] = 1;
-        if (arg3 > 0 && arg3 < PLAYER_MAX_FLAGS)
+        if (arg3 > PLAYER_REQUIREMENT_NONE && arg3 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg3] = 0;
         loglog("Set player flag %d & %d and clear player flag %d", arg1, arg2, arg3);
         break;
 
     case 4: // Toggle Flags
-        if (arg1 > 0 && arg1 < PLAYER_MAX_FLAGS)
+        if (arg1 > PLAYER_REQUIREMENT_NONE && arg1 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg1] = !player->flags[arg1];
-        if (arg2 > 0 && arg2 < PLAYER_MAX_FLAGS)
+        if (arg2 > PLAYER_REQUIREMENT_NONE && arg2 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg2] = !player->flags[arg2];
-        if (arg3 > 0 && arg3 < PLAYER_MAX_FLAGS)
+        if (arg3 > PLAYER_REQUIREMENT_NONE && arg3 < PLAYER_REQUIREMENT_IMPOSSIBLE)
             player->flags[arg3] = !player->flags[arg3];
         loglog("Toggle player flag %d, %d and %d", arg1, arg2, arg3);
         break;
@@ -121,9 +125,9 @@ static int choiceExecuteAction(Player *player, unsigned int action)
 
             renderMap(player->currentMap, &player->x, &player->y);
 
-            if (arg2 > 0 && arg2 < PLAYER_MAX_FLAGS)
+            if (arg2 > PLAYER_REQUIREMENT_NONE && arg2 < PLAYER_REQUIREMENT_IMPOSSIBLE)
                 player->flags[arg2] = 1;
-            if (arg3 > 0 && arg3 < PLAYER_MAX_FLAGS)
+            if (arg3 > PLAYER_REQUIREMENT_NONE && arg3 < PLAYER_REQUIREMENT_IMPOSSIBLE)
                 player->flags[arg3] = 1;
 
             loglog("Load map %d and Set player flag %d & %d", arg1, arg2, arg3);
