@@ -5,13 +5,13 @@ NPCS 1,0,2,3
 #flag 1: main quest taken
 #flag 2: uranium quest taken
 #flag 3: wire quest taken
-#flag 4: last quest taken
+#flag 4: music quest taken
 #flag 5: uranium found
 #flag 6: wire found
-#flag 7: last found
+#flag 7: music found
 #flag 8: uranium quest completed
 #flag 9: wire quest completed
-#flag 10: last quest completed
+#flag 10: music quest completed
 
 # Orber##########################################################################
 NPC 1 PORTRAIT -1
@@ -118,44 +118,44 @@ CHOICE req:0 set:0x01090000 goto:-1 Wow. Well, you are welcome.
 NODE req:0x09000000 \RNow I am able to talk properly again thanks to your help, and I am very grateful for it. But it seems like you are obligated to proceed with your esteemed tasks.\_
 CHOICE req:0 set:0 goto:-1 \*<Continue>\_
 
-#last npc##########################################################################
+#Boom-Bot##########################################################################
 
 NPC 3 PORTRAIT -1
 
 #0
-NODE req:0 
+NODE req:0 \RI don't think I know you, I suggest you talking to the sphere first.\_
 CHOICE req:0 set:0 goto:-1 Hmm...
 
 #1, main quest taken
-NODE req:0x01000000 
-CHOICE req:0 set:0 goto:2 <Talk>
-CHOICE req:0 set:0 goto:-1 <Walk away>
+NODE req:0x01000000 \*A boombox-shaped robot lays in front of you. It's not playing music.\_
+CHOICE req:0 set:0 goto:2 \*<Talk>\_
+CHOICE req:0 set:0 goto:-1 \*<Walk away>\_
 
 #2
-NODE req:1F 
-CHOICE req:0 set:0 goto:-1 
-CHOICE req:0 set:0x01040000 goto:3 
-#flag 4: last quest taken
+NODE req:1F \RAhh, hello friend... Existence has been quite dull and empty recently without my jams. I already got the parts needed for the machine years ago, though I would like a favor. Inside the room behind me are my music tapes and some extra batteries, if you could grab them I could use that bit of energy left to listen to some of my music and hopefully brighten the atmosphere before the generator is finished.\_
+CHOICE req:0 set:0 goto:-1 Uhhh, sounds awful. Give me one sec though.
+CHOICE req:0 set:0x01040000 goto:3 Sure buddy, life without music sounds terrible, I'll help you out.
+#flag 4: music quest taken
 
 #3
-NODE req:1F The gate in front of you opens.
-CHOICE req:0 set:0x071E1D20 goto:-1 <Continue>
-#open last door
+NODE req:1F \RYipee! They're in the middle of the room. Though please, don't touch or snoop around anywhere else, this is my personal room.\_ \*The gate in front of you opens.\_
+CHOICE req:0 set:0x071E1D20 goto:-1 \*<Continue>\_
+#open music door
 
-#4, last quest taken
-NODE req:0x04000000 
+#4, music quest taken
+NODE req:0x04000000 \RFriend, have you found my tapes yet?..\_
 CHOICE req:0 set:0 goto:-1 I am on it.
-CHOICE req:0x07000000 set:0 goto:5  <Give >
-#last found
+CHOICE req:0x07000000 set:0 goto:5 Here are your music tapes. Play something cheerful please. \*<Give tapes>\_
+#music found
 
 #5
-NODE req:0x1F 
-CHOICE req:0 set:0x01080000 goto:-1 
-#flag 10: last quest completed
+NODE req:0x1F \ROh, you really did it! Thank you so much friend! Now, let me enjoy my last few minutes of music...\_ \*Beerebbeb berebebbeb berebbeb berebebbeb...\_
+CHOICE req:0 set:0x010A0000 goto:-1 Well enough.
+#flag 10: music quest completed
 
-#6, last quest completed
-NODE req:0x0A000000 
-CHOICE req:0 set:0 goto:-1 <Continue>
+#6, music quest completed
+NODE req:0x0A000000 \ROur town is definitely more pleasant now! Thank you friend. But you should continue with your tasks, we are counting on you!\_
+CHOICE req:0 set:0 goto:-1 \*<Continue>\_
 
 GRID
            . .      ..#-#%%....O....%%%%#=*  ..           .  .  
