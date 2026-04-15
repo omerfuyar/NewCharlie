@@ -1,15 +1,15 @@
 MAP_ID 5
 PORTALS 
-NPCS 1,0
+NPCS 0,1
 
 #Orber
-NPC 0 PORTRAIT 0
+NPC 1 PORTRAIT 0
 
 NODE req:0 \RCome on, don’t keep us waiting!\_ \?Please...\_
 CHOICE req:0 set:0 goto:-1 \*<Continue>\_
 
 #Machine
-NPC 1 PORTRAIT 9
+NPC 0 PORTRAIT 9
 
 NODE req:0 \?Its a massive machine, pipes and wires twisting throughout, thick metal layer, seems like...\_ \!armor almost\_?\n\?All that is left to do is put the final pieces together.\_
 CHOICE req:0 set:0 goto:1 \*<Turn on the machine and restore the robot town>\_
