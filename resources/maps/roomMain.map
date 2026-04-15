@@ -94,7 +94,7 @@ NODE req:0 \RH-llo, wh-r YOU? TALGHHK s-s-s-sph-ERE.\_
 CHOICE req:0 set:0 goto:-1 Hmm...
 
 #1, main quest taken
-NODE req:0x01000000 \*A tiny little robot that seems to have its speech speakers broken.\_
+NODE req:0x01000000 \*A tinny little rover robot that seems to have its speech speakers broken.\_
 CHOICE req:0 set:0 goto:2 \*<Talk>\_
 CHOICE req:0 set:0 goto:-1 \*<Walk away>\_
 
