@@ -8,11 +8,11 @@
 
 int main(int argc, char **argv)
 {
-    // SHU_CompilerConfigure(SHUM_COMPILER_GCC, "x86_64-w64-mingw32-gcc");
-    SHU_CompilerTryConfigure("gcc");
+    SHU_CompilerConfigure(SHUM_COMPILER_GCC, "x86_64-w64-mingw32-gcc");
+    // SHU_CompilerTryConfigure("gcc");
     SHU_UtilAutomate(argc, argv);
 
-    SHU_CompilerAddFlags(SHUM_FLAGS_STANDARD_C23);
+    SHU_CompilerAddFlags(SHUM_FLAGS_STANDARD_C23 " -static -fno-stack-protector");
 
     if (argc > 1)
     {
@@ -24,11 +24,8 @@ int main(int argc, char **argv)
         SHU_CompilerAddFlags(SHUM_FLAGS_OPTIMIZATION_HIGH);
     }
 
-#if SHUM_HOST_PLATFORM == SHUM_PLATFORM_WINDOWS
-    SHU_CompilerAddFlags(" -Wl,--stack," STACK_SIZE);
-#else
-    SHU_CompilerAddFlags(" -Wl,-z,stack-size=" STACK_SIZE);
-#endif
+    //! SHU_CompilerAddFlags(" -Wl,--stack," STACK_SIZE);
+    //! SHU_CompilerAddFlags(" -Wl,-z,stack-size=" STACK_SIZE);
 
     SHU_ModuleBegin("NewCharlie", NULL);
     SHU_ModuleAddIncludeDirectory("include/");
