@@ -1,0 +1,63 @@
+MAP_ID 5
+PORTALS 
+NPCS 1,0
+
+#Orber
+NPC 0 PORTRAIT 0
+
+NODE req:0 \RCome on, don’t keep us waiting!\_ \?Please...\_
+CHOICE req:0 set:0 goto:-1 \*<Continue>\_
+
+#Machine
+NPC 1 PORTRAIT 9
+
+NODE req:0 \?Its a massive machine, pipes and wires twisting throughout, thick metal layer, seems like...\_ \!armor almost\_?\n\?All that is left to do is put the final pieces together.\_
+CHOICE req:0 set:0 goto:1 \*<Turn on the machine and restore the robot town>\_
+CHOICE req:0x0B000000 set:0 goto:3 \*<Set it to self destruct and stop the robots plans for good.>\_
+#flag 11: note found
+
+NODE req:0x1F \*You back away as the machine hums to life, the robots finally gather around the machine, slowly moving their rusty bodies after years of not moving. You are left confused as they begin entering the machine. The orb speaks:\_ \R"Thank you greatly for your help friend, though I'm afraid you were a fool to trust so easily. Don't be afraid as we're going to spare you, you did help us after all."\_
+CHOICE req:0 set:0 goto:2 \*<Listen>\_
+
+NODE req:0x1F \R"But I hope you enjoy the show as you see the world burn."\_ \*The orb's voice disappears into the loud noises of the machine, as you come to the realization that this isn't a generator, it's a weapon of mass destruction.\_
+CHOICE req:0 set:0 goto:4 \*<The End...>\_
+
+NODE req:0x1F \*You look back at the robots waiting in anticipation. You won't let this happen. You rig the machine to explode, and dart towards the exit. The robots, weakened and rusty, shocked and confused of what had happened, fail to get out in time. The whole town and the cave blows into bits, all crumbling and burying this place for good. You don't know whether you made the right choice, though it's one you don't regret.\_
+CHOICE req:0 set:0 goto:4 \*<The End...>\_
+
+NODE req:0x1F \!THE END.\_
+CHOICE req:0 set:0 goto:-1 \*<Quit>\_
+
+GRID
+           . .      ..#-#%%.........%%%%#=*  ..           .  .  
+.      .                #####=+&+=######      .            .  ..
+ .   .                                             .           .
+ .                                        .           .        .
+            .                        .                        . 
+              .  .            . .                  .       .   .
+   .   .                         .              .    .         %
+         . . .     .      .                                   ##
+ .              .       .                                    -#%
+.  .  .        . .        .       .            .             :+%
+###                     .    :.   #       .  .    .           #%
+...#        .                +#===#:               . .        #%
+######                  .   .=#  .#::     .                  ##%
+.....-###            #########*   #=#: .      ..            ||#.
+######=+&               @     I$$$   ||   .                 +...
+......###          I  %#%#.    $$$  ||:          .          &...
+%+###*                   %#=##:   .####+  .      .          +...
+...#         . .   .         #: .%#                         ||..
+..#                 .        #===#-               ..         ##%
+###      .      . .    .     #   #-                    .      #%
+       .  ...   .            #  .#-        .      .           ##
+  .       .  .         ..           .     .          .  .      #
+    .                                           .        .      
+                    . ..                   .        .        .  
+.     .         . .    .   . .  .      .                        
+    .  ..   .        .  .   .                   .               
+ . .   .   .     .   .                  .                   .   
+           .                              .  .                  
+   .       .                                                .   
+   .    .                .#=-+&+-=##                            
+.    .  .          . ######%......%%######        .             
+    .. .       ####%%%%%%..............%%###       .      .     

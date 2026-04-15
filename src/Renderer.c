@@ -306,9 +306,7 @@ void renderPortrait(const Portrait *portrait)
 
         for (int x = 0; x < MAP_MAX_WIDTH; x++)
         {
-            setAttributesForCharacter(portrait->data[y][x]);
             SHU_PutCharacter(portrait->data[y][x]);
-            SHU_SetAttributes(SHUAttribute_Reset);
         }
     }
 }

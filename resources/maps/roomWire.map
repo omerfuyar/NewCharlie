@@ -1,37 +1,78 @@
 MAP_ID 3
 PORTALS 1
-NPCS 0
+NPCS 0,1,2,3
+
+#flag 6: wire found
+
+# Junk NPC 0
+NPC 0 PORTRAIT 4
+NODE req:0 \?You inspect this strange metallic pile.\_
+CHOICE req:0 set:0 goto:1 \*<Search through it>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You rummage through the rusty parts but find nothing of use, just old gears.\_
+CHOICE req:0 set:0x072C0258 goto:-1 \*<Leave>\_
+
+# Junk NPC 1
+NPC 1 PORTRAIT 4
+NODE req:0 \?You inspect this strange metallic pile.\_
+CHOICE req:0 set:0 goto:1 \*<Search through it>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You search the debris... It's just a bunch of broken springs and smashed bolts.\_
+CHOICE req:0 set:0x073C0658 goto:-1 \*<Leave>\_
+
+# Junk NPC 2
+NPC 2 PORTRAIT 4
+NODE req:0 \?You inspect this strange metallic pile.\_
+CHOICE req:0 set:0 goto:1 \*<Search through it>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You carefully move the metallic shards... Only dirt and rusted metal.\_
+CHOICE req:0 set:0x07370D58 goto:-1 \*<Leave>\_
+
+# Wire NPC 3
+NPC 3 PORTRAIT 6
+NODE req:0 \?You inspect this strange metallic pile. This one has some cables sticking out...\_
+CHOICE req:0 set:0 goto:1 \*<Search through it carefully>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You dig through the rubble and pull out a large bundle of intact cables! You found the \!Wire\_\*!\_
+CHOICE req:0 set:0x01060000 goto:2 \*<Take it>\_
+
+NODE req:0x1F \*Task updated: Return to Brittle-bolt with the Wire.\_
+CHOICE req:0 set:0x07221D58 goto:-1 \*<Continue>\_
 
 GRID
-@                                                               
- O                                                              
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
+       .       .     .           .                    .         
+                          .               ######               .
+           .         .             .   .  # I  #.               
+    .      . .     .     .                #.   # .             .
+     .      .                             #    #                
+               .   .            .    .    #.   ################ 
+  .   .              . .   .       . .    #         ..   .  I.# 
+# ..     .        .            .  .       #    ################ 
+#              .        .   ###############  . # .      . .     
+##                    .   . #.        .     .  #.    .     .    
+##      ..  . .     .       #  .  .########.   #..        .     
+.##               .        .#.    .#      # .  #          .     
+..####+                     #     .#      #   .# .  #######     
+.....+#######################      #   .  #    #   .#  I  #     
+...O  @                            #      #  . #   .#     #   . 
+....################################      #    #    #    .#    .
+...##.        .               .  .        #  . #    #     #     
+..##                           .          #    #    #   . #     
+.##.                    .        .       .#    ######  .  #     
+##   .                  . .         .     #      .        #   ..
+# . .          .  .  .  .               . #               #. .  
+ .                                   .   .###########. .. #     
+                         .  ..   . .                #   . #. .  
+  .                .     .        .                 #. .  #     
+       .             .     .             .     ..   #.    # .   
+    .   .     . ..                      .           #     #     
+                    .     .    .     .   .          #    .#.    
+ .             .             .        .   .. .      #  .  #     
+        .  .                    #####################     #    .
+  .   .           .         .   # I    .           .    . #     
+    .           . .             ###########################...  
+        .. .     .     ..           ..  .  .                  . 

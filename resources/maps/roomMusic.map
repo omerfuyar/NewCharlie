@@ -1,0 +1,82 @@
+MAP_ID 4
+PORTALS 1
+NPCS 0,1,2,3
+
+#flag 7: music found
+#flag 11: note found
+
+# Junk NPC 0
+NPC 0 PORTRAIT 4
+NODE req:0 \?You inspect this strange metallic pile.\_
+CHOICE req:0 set:0 goto:1 \*<Search through it>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You rummage through the rusty parts but find nothing of use, just old gears.\_
+CHOICE req:0 set:0x07340A58 goto:-1 \*<Leave>\_
+
+# Junk NPC 1
+NPC 1 PORTRAIT 4
+NODE req:0 \?You inspect this strange metallic pile.\_
+CHOICE req:0 set:0 goto:1 \*<Search through it>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You search the debris... It's just a bunch of broken wires and smashed bolts.\_
+CHOICE req:0 set:0x070E0D58 goto:-1 \*<Leave>\_
+
+# Secret Note NPC 2
+NPC 2 PORTRAIT 8
+NODE req:0 \?You inspect this strange metallic pile... You find a note laying on the ground.\_
+CHOICE req:0 set:0 goto:1 \*<Read it>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*Reading it you see that this is a note detailing the inner working of the machine in the middle of the room, though you come to the horrifying realization that this machine isn't referred to as a generator but in fact a weapon of mass destruction, with the intention to wreak havoc on the surface. You've been manipulated and lied to, can't let them know you figured it out. Time to see if there's any way to turn this machine against them.\_
+CHOICE req:0 set:0x010B0000 goto:2 \*<Take it>\_
+
+NODE req:0x1F \*Task updated: You found the \!Secret Note\_\*!\_
+CHOICE req:0 set:0x072E1258 goto:-1 \*<Continue>\_
+
+# Music Tapes NPC 3
+NPC 3 PORTRAIT 7
+NODE req:0 \?You inspect this strange metallic pile. You hear a faint rattling coming from it...\_
+CHOICE req:0 set:0 goto:1 \*<Search through it carefully>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You dig through the rubble and find a couple of sturdy tape cassettes! You found the \!Music Tapes\_\*!\_
+CHOICE req:0 set:0x01070000 goto:2 \*<Take them>\_
+
+NODE req:0x1F \*Task updated: Return to BoomBot with the Music Tapes.\_
+CHOICE req:0 set:0x071D1A58 goto:-1 \*<Continue>\_
+
+GRID
+  . .. .   ## ...................................#   .  .  .  . 
+        .    #########........................###            .  
+.     .     .       . ########  O   ##########   .    .   .  .  
+       .         .     .    ##      #                   .     . 
+..       .         .       .#.  @   #              .    .       
+               .      .     # . .   # .   .        .            
+              ###         . #       #         .     .          .
+   .    #######  ####       #  .    #+################          
+     ######.      ######    #                     .   ###       
+   ###      .         . ### #        . .  .     .        ##     
+  ##       .          .   ### ..             .      I      ##   
+ #                   .                . .  .                 #  
+#   .   ..     .   .       .     .         .                  #.
+#.            I                .        .   .     .    .  .   ##
+#   .        .     .               .           .       ###   .# 
+#   ..                          .  .       ########.  . .#%  ## 
+#. .               .        .   .         ..       ###  ##  ##  
+##                    .       .         ..           ##.#. ## . 
+  ##          .           ..           #     .I       #.#  ##   
+   .##  .       .   .    .           . #     .    . ##..   #=   
+     ##      .               .    . .   #       #####...   ##   
+       #     . .  .              .       ######## ....    ## .  
+     .  ##      .                .       .  ....      #### .    
+         ####             .               .    ######-      .   
+       . . ###      .   .     . .        .    ###.              
+             ###                  .    ##  #  ##                
+               ####   .      I     ..   #  #. ##        .       
+                  ###                   #  #  ##            .. .
+                 .  ### .               #  #  ##         .      
+                 .   ###.               #  #  ##         .      
+                 .     ####           ###--#--##         .      
+       ..       . .       ############          .               

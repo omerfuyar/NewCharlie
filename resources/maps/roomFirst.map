@@ -2,7 +2,7 @@ MAP_ID 0
 PORTALS 1
 NPCS 0
 
-NPC 0 PORTRAIT -1
+NPC 0 PORTRAIT 10
 NODE req:0 \?These are some ancient symbols and also seems like a... welcome rug but instead carved into the ground???\_
 CHOICE req:0 set:0 goto:-1 Continue.
 
@@ -25,7 +25,7 @@ GRID
 #                                                           ####
 #                                                            ###
 # @                                                           O#
-#           I                                                ###
+#                                                      I     ###
 #                                                           ####
 ################################################################
                                                                 

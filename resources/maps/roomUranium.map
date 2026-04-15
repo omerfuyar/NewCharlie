@@ -1,37 +1,80 @@
+# uranium room
 MAP_ID 2
 PORTALS 1
-NPCS 0
+NPCS 2,0,1,3
 
+#flag 5: uranium found
+
+# Junk NPC 1
+NPC 3 PORTRAIT 4
+NODE req:0 \?You inspect this strange metallic pile.\_
+CHOICE req:0 set:0 goto:1 \*<Search through it>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You rummage through the rusty parts but find nothing of use, just old gears.\_
+CHOICE req:0 set:0x073B0A58 goto:-1 \*<Leave>\_
+
+# Junk NPC 2
+NPC 0 PORTRAIT 4
+NODE req:0 \?You inspect this strange metallic pile.\_
+CHOICE req:0 set:0 goto:1 \*<Search through it>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You search the debris... It's just a bunch of broken wires and smashed bolts.\_
+CHOICE req:0 set:0x07030658 goto:-1 \*<Leave>\_
+
+# Junk NPC 0
+NPC 1 PORTRAIT 4
+NODE req:0 \?You inspect this strange metallic pile.\_
+CHOICE req:0 set:0 goto:1 \*<Search through it>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You carefully move the metallic shards... Only dirt and rusted metal.\_
+CHOICE req:0 set:0x071A0158 goto:-1 \*<Leave>\_
+
+# Uranium NPC 3
+NPC 2 PORTRAIT 5
+NODE req:0 \?You inspect this strange metallic pile. This one feels strangely warm...\_
+CHOICE req:0 set:0 goto:1 \*<Search through it carefully>\_
+CHOICE req:0 set:0 goto:-1 \*<Leave it alone>\_
+
+NODE req:0x1F \*You dig through the rubble and find a brightly glowing green rock! You found the \!Uranium\_\*!\_
+CHOICE req:0 set:0x01050000 goto:2 \*<Take it>\_
+
+NODE req:0x1F \*Task updated: Return to Wrench-head with the Uranium.\_
+CHOICE req:0 set:0x07330358 goto:-1 \*<Continue>\_
+
+#  2                      0                        1       3
 GRID
-@                                                               
- O                                                              
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
+     #-    .            .     .  .       .#     . .             
+     .*#   . .   .        I   ..        *# .    ..       .      
+  .    :%.  .                    .     ##      .       .        
+.        #=  .        ...        .   .#*  . .      I. .  ..   . 
+   .      .#:        . .   .         #:      .                 #
+   .     .  %#                      #.                      =#+ 
+   I   .      %+ .      . . .  .   %#     .    .        -##-    
+ .              #-.               ##+       .  .. . +##=        
+       .         #%.    .        ##     ..      +##=            
+          .    .   #        ..   # .         :##              . 
+-             .     %#=  .      *#    .    -#-   .       . I .  
+ +##=           . .   #%:      *#  .    .#+ .                   
+     +##-               .         . . *#-              .    . +#
+    .    #-   .    .             .  ##-    .             =####. 
+      . .  -###            .     .             .     =###       
+       . .     +#+   .         .     .          .=###     .     
+  ..              =##   . . .    .           .##+ . .   .       
+               .     ##-    .         . .  ##=   .     . .      
+..       .        .    +#.              +##       .    .    . . 
+    ..     .  .   .  .  -#+    .   .. ##                        
+                         +#  .      -#                          
+                         +#      . ##   .   .      .            
+         .            .   # .     .#:       .  .          .     
+     .   .  .   .         # .   . =#       .  .   .   .         
+   .   . ..   .         . #.      #      .       .  .         . 
+            .             # .   .##   .      .             .    
+        .     .    .     +#      ##    .                      . 
+     .  .    .        .  ##      ##           .  .             .
+                .       ###+     ###       .  .     .    .   .  
+  .              .   . #####: @ +####.             .      ..   .
+              .       ######.. .########.                    . .
+     .      #%%%#%#%####......O.......%#######%%*  .  .    .    

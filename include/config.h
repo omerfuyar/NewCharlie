@@ -19,7 +19,7 @@
 
 #define MAP_MAX_COUNT 16
 
-#define PORTRAIT_MAX_COUNT 8
+#define PORTRAIT_MAX_COUNT 16
 
 #define NPC_MAX_COUNT 16
 #define NPC_NODE_MAX_COUNT 16

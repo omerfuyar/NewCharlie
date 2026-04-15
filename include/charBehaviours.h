@@ -12,9 +12,12 @@
     CHAR_ENTRY(FLOOR, ' ', floorBehaviour, SHUAttribute_ColorBGBlack)                        \
     CHAR_ENTRY(WALL1, '#', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)      \
     CHAR_ENTRY(WALL2, '=', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)      \
+    CHAR_ENTRY(WALL3, '%', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)      \
+    CHAR_ENTRY(WALL4, '+', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)      \
     CHAR_ENTRY(DOOR, '&', wallBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGGreen)       \
     CHAR_ENTRY(PORTAL, 'O', portalBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGMagenta) \
-    CHAR_ENTRY(NPC, 'I', npcBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGCyan)
+    CHAR_ENTRY(NPC, 'I', npcBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGCyan)          \
+    CHAR_ENTRY(DONE, 'X', floorBehaviour, SHUAttribute_Bold, SHUAttribute_ColorFGRed)
 
 #define CHAR_ENTRY(a, b, c, ...) CHAR_##a = b,
 typedef enum CHAR_ID
