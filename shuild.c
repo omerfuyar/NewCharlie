@@ -8,6 +8,7 @@
 
 int main(int argc, char **argv)
 {
+    // SHU_CompilerConfigure(SHUM_COMPILER_GCC, "x86_64-w64-mingw32-gcc");
     SHU_CompilerTryConfigure("gcc");
     SHU_UtilAutomate(argc, argv);
 

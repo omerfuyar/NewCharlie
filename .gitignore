@@ -1,9 +1,7 @@
 build/
-*.exe
 *.old
 .shu/
 .vscode
 ignore*
-NewCharlie
 shuild
 *.log
