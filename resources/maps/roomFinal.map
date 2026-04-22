@@ -26,7 +26,7 @@ NODE req:0x1F \*You look back at the robots waiting in anticipation. You won't l
 CHOICE req:0 set:0 goto:4 \*<The End...>\_
 
 NODE req:0x1F \!THE END.\_
-CHOICE req:0 set:0 goto:-1 \*<Quit>\_
+CHOICE req:0 set:0x05000000 goto:-1 \*<Quit>\_
 
 GRID
            . .      ..#-#%%.........%%%%#=*  ..           .  .  
