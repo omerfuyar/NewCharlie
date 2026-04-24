@@ -8,7 +8,7 @@
 void handleSignal(int signal)
 {
     SHU_ClearTerminal();
-    SHU_Terminate();
+    SHU_TerminateConsole();
     loglog("!!! Received signal %d !!!\n", signal);
 }
 
@@ -21,7 +21,7 @@ int main(const int argc, const char **argv)
     signal(SIGTERM, handleSignal);
     signal(SIGSEGV, handleSignal);
 
-    SHU_Initialize();
+    SHU_InitializeConsole();
     SHU_SetTerminalAlternate(1);
     SHU_SetCursorVisibility(0);
     SHU_ClearTerminal();
@@ -80,13 +80,13 @@ int main(const int argc, const char **argv)
         }
     }
 
-    SHU_Terminate();
+    SHU_TerminateConsole();
     return 0;
 
 error:
     SHU_PutString("\nAn error occurred. Press any key to exit.\n");
     SHU_Key();
 
-    SHU_Terminate();
+    SHU_TerminateConsole();
     return 1;
 }
