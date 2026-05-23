@@ -244,7 +244,7 @@ int renderInputField(const char *selection1, const char *selection2, const char 
 
     while (1)
     {
-        SHUKey key = SHU_Key();
+        SHUKey key = SHU_InputKey();
 
         if (key == SHUKey_1 && selection1 != NULL)
         {

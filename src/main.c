@@ -67,7 +67,7 @@ int main(const int argc, const char **argv)
 
     while (1)
     {
-        SHUKey key = SHU_Key();
+        SHUKey key = SHU_InputKey();
 
         if (key == SHUKey_Escape)
         {
@@ -85,7 +85,7 @@ int main(const int argc, const char **argv)
 
 error:
     SHU_PutString("\nAn error occurred. Press any key to exit.\n");
-    SHU_Key();
+    SHU_InputKey();
 
     SHU_TerminateConsole();
     return 1;
