@@ -69,7 +69,7 @@ static void putStringStyled(const char *string, int strLen, int x, int y)
             }
             else
             {
-                setAttributesForLook(nextCharacter);
+                setAttributesForLook((LOOK_ID)nextCharacter);
                 i++;
             }
         }
@@ -278,8 +278,8 @@ void renderMap(const Map *map, int *playerX, int *playerY)
 
         for (int x = 0; x < MAP_MAX_WIDTH; x++)
         {
-            setAttributesForCharacter(map->data[y][x]);
-            SHU_PutCharacter(map->data[y][x]);
+            setAttributesForCharacter((CHAR_ID)map->data[y][x]);
+            SHU_PutCharacter((i32)map->data[y][x]);
             SHU_SetAttributes(SHUAttribute_Reset);
         }
     }
@@ -349,7 +349,7 @@ int renderPlayer(Player *player, SHUKey key)
 
 callBehaviour:
 
-    int result = callBehaviourForCharacter(player->currentMap->data[newY][newX], player, data);
+    int result = callBehaviourForCharacter((CHAR_ID)player->currentMap->data[newY][newX], player, data);
     if (result != 0)
     {
         return result;

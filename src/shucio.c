@@ -1,2 +1,2 @@
-#define SHUCIO_IMPLEMENTATION
+#define SHU_IMPLEMENTATION
 #include "shucio/shucio.h"
