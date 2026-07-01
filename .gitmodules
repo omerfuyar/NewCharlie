@@ -4,3 +4,6 @@
 [submodule "dependencies/shucio"]
 	path = dependencies/shucio
 	url = https://github.com/omerfuyar/shucio
+[submodule "dependencies/shu"]
+	path = dependencies/shu
+	url = https://github.com/omerfuyar/shu.git
