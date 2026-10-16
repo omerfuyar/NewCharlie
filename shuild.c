@@ -11,7 +11,6 @@
 int main(int argc, char **argv)
 {
     SHU_CompilerConfigure(SHUM_COMPILER_GCC, "gcc");
-    // SHU_CompilerTryConfigure("gcc");
     SHU_UtilAutomate(argc, argv);
 
     SHU_CompilerAddFlags(SHUM_FLAGS_STANDARD_C23 " -static -fno-stack-protector");
@@ -26,8 +25,11 @@ int main(int argc, char **argv)
         SHU_CompilerAddFlags(SHUM_FLAGS_OPTIMIZATION_HIGH);
     }
 
+#ifdef _WIN32
     SHU_CompilerAddFlags(" -Wl,--stack," STACK_SIZE);
-    //! SHU_CompilerAddFlags(" -Wl,-z,stack-size=" STACK_SIZE);
+#else
+    SHU_CompilerAddFlags(" -Wl,-z,stack-size=" STACK_SIZE);
+#endif
 
     SHU_ModuleBegin("NewCharlie", NULL);
     SHU_ModuleAddIncludeDirectory("include/");
